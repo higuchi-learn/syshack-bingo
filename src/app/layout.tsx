@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { popFont } from "@/utils/fonts"
-import './globals.css';
+import { popFont } from '../lib/fonts';
+import '../styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'Syshack BINGO', // ここの文字列がブラウザのタブに表示される
+  title: 'SysHack BINGO', // ここの文字列がブラウザのタブに表示される
   description: 'Created by plusU', // こちらはメタタグに表示される文字列
 };
 
