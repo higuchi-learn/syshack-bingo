@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { inter } from "@/utils/fonts"
+import { popFont } from "@/utils/fonts"
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${inter.className}`}>
+    <html lang="ja" className={`${popFont.className}`}>
       <body>{children}</body>
     </html>
   );
