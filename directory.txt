@@ -27,7 +27,7 @@
 │   │   │       ├── host/
 │   │   │       │   ├── page.tsx          # 開催者ゲーム画面
 │   │   │       │   └── any.tsx           # 作ったコンポーネントで、単一ページでしか使用しないものは同階層においてね
-│   │   │       └──[playerId]/          # 動的ルーティング（playerNameによって異なるページ）
+│   │   │       └──[playerId]/            # 動的ルーティング（playerNameによって異なるページ）
 │   │   │           ├── signin/
 │   │   │           │   └── page.tsx      # 参加者名前入力画面
 │   │   │           └── playing/
@@ -64,10 +64,10 @@
 │── components.json                       # shadcn/uiをインストールしたら増えたよ
 │── directory.txt                         # このファイル。フォルダー・ファイルの置き場を確認してね
 │── eslint.config.mjs                     # ESLintの設定ファイルを書いてあるよ
-│── next-env.d.ts                         # なんだこれ（迫真）
+│── next-env.d.ts                         # Next.jsのTypeScriptの型定義を拡張するためのファイル（なにそれ）
 │── next.config.js                        # Next.js設定
-│── package-lock.json                     # ごめんよく知らない
-│── package.json                          # 依存関係管理（必要なnodemoduleが書かれてるよ）
+│── package-lock.json                     # パッケージのバージョン情報
+│── package.json                          # 依存関係管理（必要なパッケージとスクリプトが書かれてるよ）
 │── postcss.config.mjs                    # Tailwind CSSのためになんか追加された
 │── README.md                             # プロジェクト概要
 └── tsconfig.json                         # なにこれ
