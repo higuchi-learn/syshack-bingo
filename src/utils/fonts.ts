@@ -1,6 +1,6 @@
-import { Inter } from 'next/font/google';
+import { M_PLUS_2 } from 'next/font/google';
 
-export const inter = Inter({
+export const popFont = M_PLUS_2({
     subsets: ["latin"],
     display: "swap",
   });
