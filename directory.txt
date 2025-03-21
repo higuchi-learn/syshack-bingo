@@ -1,41 +1,49 @@
 /bingo-game
 │── .next/                                # npm run devでなんか生成される
+│── firebase/                             # Firebase設定・初期化
+│   ├── firestore.rules                   # Firestoreのセキュリティルール
+│   ├── firebase.json                     # Firebaseの設定ファイル
+│   └── init.ts                           # Firebase初期化スクリプト
 │── node_modules/                         # npm installで追加されるモジュールたち
 │── public/                               # 静的ファイル（例: ファビコン、画像）
 │── src/
 │   ├── app/                              # Next.js App Router
+│   │   ├── api/                          # APIルート（サーバーサイド処理を記述）
+│   │   │   ├── customs-select/
+│   │   │   │   └── route.ts              # POST: ゲームルーム作成
+│   │   │   └── gameroom/
+│   │   │       └── [roomId]/             # 動的ルーティング（roomIdによって異なるAPI）
+│   │   │           ├── host/
+│   │   │           │   └──route.ts       # POST: ビンゴの抽選、数秒後順位を更新。
+│   │   │           └── player/
+│   │   │               ├── sign-in/
+│   │   │               │   └──route.ts   # POST: ビンゴカードを生成、ビンゴカード、プレイヤー名（とカスタム）GET: 他のプレイヤー名
+│   │   │               └── [playerId]/   # 動的ルーティング（plyaerIdによって異なるAPI）
+│   │   │                   └── route.ts  # GET: カード情報・カスタム情報、 POST: ビンゴカードの評価結果
+│   │   ├── customs-select/
+│   │   │   ├── custom/
+│   │   │   │   ├── page.tsx              # カスタムモードでのカスタム選択後、新規ルーム作成
+│   │   │   │   └── any.tsx               # <!-- message: 作ったコンポーネントで、単一ページでしか使用しないものは同階層においてね -->
+│   │   │   ├── normal/
+│   │   │   │   └── page.tsx              # ノーマルモードでのカスタム選択後、新規ルーム作成
+│   │   │   └── speed/
+│   │   │       └── page.tsx              # スピードモードでのカスタム選択後、新規ルーム作成
+│   │   ├── gameroom/                     # ゲーム画面
+│   │   │   └── [roomId]/                 # 動的ルーティング（roomIdによって異なるページ）
+│   │   │       ├── host/
+│   │   │       │   └── page.tsx          # 開催者ゲーム画面
+│   │   │       ├── player/
+│   │   │       │   ├── sign-in/
+│   │   │       │   │   └── page.tsx      # 参加者名前入力画面
+│   │   │       │   └── [playerId]/       # 動的ルーティング（playerIdによって異なるページ）
+│   │   │       │       └── page.tsx      # 参加者ゲーム画面
+│   │   │       └── result/
+│   │   │           └── page.tsx          # リザルト画面（レスポンシブにて対応）
+│   │   ├── mode-select/
+│   │   │   └── page.tsx                  # モード選択画面
 │   │   ├── favicon.ico                   # ファビコン。
 │   │   ├── layout.tsx                    # すべてのファイルに適用するスタイル？（ごめんよく分かってない）
-│   │   ├── page.tsx                      # 一番最初に表示されるページ
-│   │   ├── api/                          # APIルート（サーバーサイド処理を記述）
-│   │   │   ├── custom/                   # 新しいゲームルームを作成する
-│   │   │   │   └── route.ts              # POST: ゲームルーム作成、GET: 作成されたroomId
-│   │   │   └── gameroom/                 # 参加者登録、ビンゴカードを生成する
-│   │   │       └──[roomId]/              # 動的ルーティング（roomIdによって異なるAPI）
-│   │   │           ├── host/
-│   │   │           │   └──route.ts       # POST: ビンゴの抽選、数秒後順位を更新。 GET: 各プレイヤーのカード情報（onsnapshot）
-│   │   │           └──[playerId]/        # 動的ルーティング（roomIdによって異なるAPI）
-│   │   │              ├── signin/
-│   │   │              │   └── route.ts   # POST: ビンゴカードを生成、ビンゴカード、プレイヤー名（とカスタム）
-│   │   │              └── playing/
-│   │   │                  └── route.ts   # GET: カード情報（onshapshot）・カスタム情報、 POST: ビンゴカードの評価結果
-│   │   ├── custom/
-│   │   │   ├── page.tsx                  # 新しいゲームルームを作成する
-│   │   │   └── any.tsx                   # <!-- message: 作ったコンポーネントで、単一ページでしか使用しないものは同階層においてね -->
-│   │   ├── gameroom/                     # ゲーム画面
-│   │   │   └──[roomId]/                  # 動的ルーティング（roomIdによって異なるページ）
-│   │   │       ├── host/
-│   │   │       │   ├── page.tsx          # 開催者ゲーム画面
-│   │   │       │   └── any.tsx           # 作ったコンポーネントで、単一ページでしか使用しないものは同階層においてね
-│   │   │       └──[playerId]/            # 動的ルーティング（playerNameによって異なるページ）
-│   │   │           ├── signin/
-│   │   │           │   └── page.tsx      # 参加者名前入力画面
-│   │   │           └── playing/
-│   │   │               └── page.tsx      # 参加者ゲーム画面
-│   │   ├── modeselect/
-│   │   │   └── page.tsx                  # モード選択画面
-│   │   └── result/
-│   │       └── page.tsx                  # リザルト画面
+│   │   └── page.tsx                      # 一番最初に表示されるページ
 │   ├── components/                       # UIコンポーネント
 │   │   ├── layouts/
 │   │   │   └── any.tsx                   # 作ったコンポーネントで、複数ページで使うもの
@@ -47,22 +55,19 @@
 │   │   │   └── toggle-group.tsx
 │   │   └── animations/                   # アニメーション（例: ビンゴ演出）
 │   ├── lib/                              # 共通ライブラリ・ヘルパー関数
-│   │   ├── firebase.ts                   # Firestore関連関数
 │   │   ├── fonts.ts                      # グーグルフォントを定義させてる
 │   │   └── utils.ts                      # 汎用ユーティリティ（よくわからん）
 │   ├── styles/                           # グローバルスタイルのためだけに置いてる
 │   │   └── globals.css                   # Tailwind css使うよ！みたいなこと書いてある（ごめんよく分かってない）
 │   └── types/                            # 型定義（TypeScript）
 │       └── any.ts
-│── firebase/                             # Firebase設定・初期化
-│   ├── firestore.rules                   # Firestoreのセキュリティルール
-│   ├── firebase.json                     # Firebaseの設定ファイル
-│   └── init.ts                           # Firebase初期化スクリプト
 │── .env.local                            # 環境変数ファイル（ローカル用）
 │── .gitignore                            # gitで管理しないファイルを書くよ
 │── .prettierrc                           # prettireの設定を書いてあるよ
 │── components.json                       # shadcn/uiをインストールしたら増えたよ
+│── database.txt                          # Firestoreのデータ構造が書いてあるよ
 │── directory.txt                         # このファイル。フォルダー・ファイルの置き場を確認してね
+│── document.txt                          # このファイル。フォルダー・ファイルの置き場を確認してね
 │── eslint.config.mjs                     # ESLintの設定ファイルを書いてあるよ
 │── next-env.d.ts                         # Next.jsのTypeScriptの型定義を拡張するためのファイル（なにそれ）
 │── next.config.js                        # Next.js設定
