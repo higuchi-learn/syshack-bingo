@@ -13,12 +13,12 @@
 │   │   │   └── gameroom/                 # 参加者登録、ビンゴカードを生成する
 │   │   │       └──[roomId]/              # 動的ルーティング（roomIdによって異なるAPI）
 │   │   │           ├── host/
-│   │   │           │   └──route.ts       # POST: ビンゴの抽選、GET: 各プレイヤーのカード情報（onsnapshot）、POST:各プレイヤーのビンゴカードを走査。確率等を計算
+│   │   │           │   └──route.ts       # POST: ビンゴの抽選、数秒後順位を更新。 GET: 各プレイヤーのカード情報（onsnapshot）
 │   │   │           └──[playerId]/        # 動的ルーティング（roomIdによって異なるAPI）
 │   │   │              ├── signin/
 │   │   │              │   └── route.ts   # POST: ビンゴカードを生成、ビンゴカード、プレイヤー名（とカスタム）
 │   │   │              └── playing/
-│   │   │                  └── route.ts   # GET: カード情報（onshapshot）、カスタム情報
+│   │   │                  └── route.ts   # GET: カード情報（onshapshot）・カスタム情報、 POST: ビンゴカードの評価結果
 │   │   ├── custom/
 │   │   │   ├── page.tsx                  # 新しいゲームルームを作成する
 │   │   │   └── any.tsx                   # <!-- message: 作ったコンポーネントで、単一ページでしか使用しないものは同階層においてね -->
