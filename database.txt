@@ -3,7 +3,7 @@
     "roomId": {                                                       # nanoidにて8桁のIdを生成
       "createdAt": timestamp,                                         # タイムスタンプ。ミリ秒まで
       "roomName": string,                                             # ゲームマスターが入力したルーム名
-      "status": string: waiting | playing | finished,                 # 募集中、進行中、終了済みを判別用
+      "status": string: standby | playing | finished,                 # 募集中、進行中、終了済みを判別用
       "customs": {                                                    # カスタムを保存
         "winLine": number,                                            # 報酬獲得の規定ビンゴ数
         "highSpeed": boolean,                                         # 9マスビンゴ

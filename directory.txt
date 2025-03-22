@@ -14,7 +14,8 @@
 │   │   │   └── gameroom/
 │   │   │       └── [roomId]/             # 動的ルーティング（roomIdによって異なるAPI）
 │   │   │           ├── host/
-│   │   │           │   └──route.ts       # POST: ビンゴの抽選、数秒後順位を更新。
+│   │   │           │   └── playing
+│   │   │           │       └──route.ts   # POST: ビンゴの抽選、数秒後順位を更新。GET: player上位10人と下位3人を取得
 │   │   │           └── player/
 │   │   │               ├── sign-in/
 │   │   │               │   └──route.ts   # POST: ビンゴカードを生成、ビンゴカード、プレイヤー名（とカスタム）GET: 他のプレイヤー名
@@ -31,7 +32,10 @@
 │   │   ├── gameroom/                     # ゲーム画面
 │   │   │   └── [roomId]/                 # 動的ルーティング（roomIdによって異なるページ）
 │   │   │       ├── host/
-│   │   │       │   └── page.tsx          # 開催者ゲーム画面
+│   │   │       │   ├── standby/
+│   │   │       │   │   └── page.tsx      # 募集画面
+│   │   │       │   └── playing/
+│   │   │       │       └── page.tsx      # 開催者ゲーム画面
 │   │   │       ├── player/
 │   │   │       │   ├── sign-in/
 │   │   │       │   │   └── page.tsx      # 参加者名前入力画面
