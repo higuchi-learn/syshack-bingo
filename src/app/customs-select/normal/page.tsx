@@ -1,49 +1,39 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { nanoid } from "nanoid"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { nanoid } from 'nanoid';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 export default function NormalCustomPage() {
-  const [roomName, setRoomName] = useState("")
-  const [winLine, setWinLine] = useState("1")
-  const router = useRouter()
+  const [roomName, setRoomName] = useState('');
+  const [winLine, setWinLine] = useState('1');
+  const router = useRouter();
 
   const handleSubmit = async () => {
-    const roomId = nanoid(8)
-
-    const payload = {
-      roomId,
-      roomName,
-      winLine,
-    }
+    const roomId = nanoid(8);
 
     try {
-      const res = await fetch("/api/customs-select", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
+      const res = await fetch('/api/customs-select', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, roomName, winLine }),
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (data.success) {
-        console.log("ルーム作成成功:", roomId)
-        router.push(`/gameroom/${roomId}/host/standby`)
+        router.push(`/gameroom/${roomId}/host/standby`);
       } else {
-        console.error("ルーム作成失敗:", data.error)
-        alert("ルームの作成に失敗しました")
+        alert(data.error || 'ルーム作成に失敗しました');
       }
     } catch (err) {
-      console.error("通信エラー:", err)
-      alert("通信エラーが発生しました")
+      console.error('通信エラー:', err);
+      alert('通信エラーが発生しました');
     }
-  }
+  };
 
   return (
     <main className="min-h-screen flex flex-col justify-between px-6 py-10 bg-white">
@@ -66,9 +56,7 @@ export default function NormalCustomPage() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">報酬獲得のライン数</h2>
-            <p className="text-sm text-gray-600 mb-2">
-              設定したライン数に達するまで報酬ゲットにはなりません。
-            </p>
+            <p className="text-sm text-gray-600 mb-2">設定したライン数に達するまで報酬ゲットにはなりません。</p>
           </div>
 
           <div className="w-32">
@@ -96,5 +84,5 @@ export default function NormalCustomPage() {
         </Button>
       </div>
     </main>
-  )
+  );
 }

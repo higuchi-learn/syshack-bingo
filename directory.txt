@@ -81,4 +81,4 @@
 │── package.json                          # 依存関係管理（必要なパッケージとスクリプトが書かれてるよ）
 │── postcss.config.mjs                    # Tailwind CSSのためになんか追加された
 │── README.md                             # プロジェクト概要
-└── tsconfig.json                         # なにこれ
+└── tsconfig.json                         # Next使うよ。とかエイリアスとかの設定

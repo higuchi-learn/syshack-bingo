@@ -16,34 +16,21 @@ export default function PlayerSignInPage() {
   const router = useRouter()
   const { roomId } = useParams()
 
-  // ✅ ルーム情報取得（GET）
   useEffect(() => {
     const fetchRoom = async () => {
-      try {
-        const res = await fetch(`/api/gameroom/${roomId}/player/sign-in`)
-        if (!res.ok) {
-          const html = await res.text()
-          console.error("API error:", html)
-          alert("ルーム情報の取得に失敗しました")
-          return
-        }
-        const data = await res.json()
-        if (data.success) {
-          setRoomName(data.roomName)
-          setPlayerList(data.players)
-        } else {
-          alert("ルームが存在しません")
-        }
-      } catch (err) {
-        console.error(err)
-        alert("通信エラーが発生しました")
+      const res = await fetch(`/api/gameroom/player/sign-in?roomId=${roomId}`)
+      const data = await res.json()
+      if (res.ok && data.success) {
+        setRoomName(data.roomName)
+        setPlayerList(data.players)
+      } else {
+        alert(data.error || "ルーム取得に失敗しました")
       }
     }
 
     if (roomId) fetchRoom()
   }, [roomId])
 
-  // ✅ 名前の重複チェック
   useEffect(() => {
     setError(playerList.includes(playerName.trim()))
   }, [playerName, playerList])
@@ -53,7 +40,7 @@ export default function PlayerSignInPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/gameroom/${roomId}/player/sign-in`, {
+      const res = await fetch(`/api/gameroom/player/sign-in?roomId=${roomId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerName }),
@@ -67,7 +54,7 @@ export default function PlayerSignInPage() {
         alert(data.error || "登録に失敗しました")
       }
     } catch (err) {
-      console.error("参加エラー:", err)
+      console.error(err)
       alert("通信エラーが発生しました")
     } finally {
       setIsLoading(false)
@@ -77,7 +64,6 @@ export default function PlayerSignInPage() {
   return (
     <main className="min-h-screen flex flex-col justify-center items-center px-6 bg-gradient-to-b from-blue-800 to-blue-900 text-white">
       <div className="w-full max-w-sm space-y-6">
-        {/* ルーム名表示 */}
         <h1 className="text-2xl font-bold text-center">{roomName}</h1>
 
         <div>
