@@ -1,35 +1,35 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { doc, setDoc } from "firebase/firestore"
-import { db } from "../../../../../../firebase/init"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { nanoid } from "nanoid"
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/firebase/init';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { nanoid } from 'nanoid';
 
 export default function PlayerSignInPage() {
-  const [playerName, setPlayerName] = useState("")
-  const router = useRouter()
-  const { roomId } = useParams()
+  const [playerName, setPlayerName] = useState('');
+  const router = useRouter();
+  const { roomId } = useParams();
 
   const handleJoin = async () => {
     if (!playerName.trim()) {
-      alert("プレイヤー名を入力してください")
-      return
+      alert('プレイヤー名を入力してください');
+      return;
     }
 
-    const playerId = nanoid(8)
-    const playerRef = doc(db, "gameRooms", String(roomId), "players", playerId)
+    const playerId = nanoid(8);
+    const playerRef = doc(db, 'gameRooms', String(roomId), 'players', playerId);
 
     await setDoc(playerRef, {
       playerName,
       joinedAt: new Date(),
-      playerId
-    })
+      playerId,
+    });
 
-    router.push(`/gameroom/${roomId}/player/waiting`) // 待機画面へ遷移（あとで作る）
-  }
+    router.push(`/gameroom/${roomId}/player/waiting`); // 待機画面へ遷移（あとで作る）
+  };
 
   return (
     <main className="min-h-screen flex flex-col justify-center items-center px-6 bg-gradient-to-b from-blue-800 to-blue-900 text-white">
@@ -52,5 +52,5 @@ export default function PlayerSignInPage() {
         </Button>
       </div>
     </main>
-  )
+  );
 }
