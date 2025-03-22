@@ -12,14 +12,37 @@ export default function NormalCustomPage() {
   const [winLine, setWinLine] = useState("1")
   const router = useRouter()
 
-  const handleSubmit = () => {
-    const roomId = nanoid(8) // 8桁のランダムIDを生成
-    console.log("ルーム名:", roomName)
-    console.log("選択されたライン数:", winLine)
-    console.log("生成されたroomId:", roomId)
+  const handleSubmit = async () => {
+    const roomId = nanoid(8)
 
-    // 🔜 遷移：/gameroom/[roomId]/host/standby
-    router.push(`/gameroom/${roomId}/host/standby`)
+    const payload = {
+      roomId,
+      roomName,
+      winLine,
+    }
+
+    try {
+      const res = await fetch("/api/customs-select", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        console.log("ルーム作成成功:", roomId)
+        router.push(`/gameroom/${roomId}/host/standby`)
+      } else {
+        console.error("ルーム作成失敗:", data.error)
+        alert("ルームの作成に失敗しました")
+      }
+    } catch (err) {
+      console.error("通信エラー:", err)
+      alert("通信エラーが発生しました")
+    }
   }
 
   return (
@@ -27,7 +50,7 @@ export default function NormalCustomPage() {
       <div>
         <h1 className="text-3xl font-bold border-b pb-4 mb-8">カスタムを設定</h1>
 
-        {/* ルーム名 */}
+        {/* ルーム名入力 */}
         <div className="mb-8">
           <label className="block text-lg font-semibold mb-2">ルーム名を入力</label>
           <Input
@@ -39,7 +62,7 @@ export default function NormalCustomPage() {
           />
         </div>
 
-        {/* ライン数 */}
+        {/* ライン数選択 */}
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">報酬獲得のライン数</h2>
