@@ -1,0 +1,41 @@
+{
+  "gameRooms": {                                                      # 親コレクション
+    "roomId": {                                                       # nanoidにて8桁のIdを生成
+      "createdAt": timestamp,                                         # タイムスタンプ。ミリ秒まで
+      "roomName": string,                                             # ゲームマスターが入力したルーム名
+      "status": string: standby | playing | finished,                 # 募集中、進行中、終了済みを判別用
+      "customs": {                                                    # カスタムを保存
+        "winLine": number,                                            # 報酬獲得の規定ビンゴ数
+        "highSpeed": boolean,                                         # 9マスビンゴ
+        "reverse": boolean,                                           # 逆ビンゴ
+        "changeProbability": string: false | light | medium | heavy,  # 確率操作モードの強弱（無効の場合はfalse）
+        "rareNumber": boolean,                                        # レアナンバーモード
+      },
+      "calledNumbers": number:[100,],                                 # 抽選済み番号
+      "winners": string:[userId,],                                    # 報酬獲得者
+        players: {                                                    # サブコレクション。プレイヤーに関する情報
+          {playerId}: {                                               # nanoidにて8桁のIdを生成
+            "playerName": string,                                     # プレイヤーが入力したプレイヤー名
+            "card": [                                                 # [4][4]の2次元配列
+              [1, 2, 3, 4, 5],
+              [6, 7, 8, 9, 10],
+              [11, 12, 100, 14, 15],
+              [16, 17, 18, 19, 20],
+              [21, 22, 23, 24, 25]
+            ],
+            "progress": {                                             # プレイヤーの状況
+              "hitCount": number,                                     # 当選番号数
+              "reachCount": number,                                   # リーチ数
+              "bingoCount": number,                                   # ビンゴ数
+              "reachProbability": number,                             # リーチ確率
+              "bingoProbability": number,                             # ビンゴ確率
+              "point": number,                                        # 加算方式によって導かれた得点
+              "reachFlag": boolean,                                   # リーチフラグ
+              "bingoFlag": boolean,                                   # ビンゴフラグ
+              "winerFlag": boolean,                                   # リーチフラグ
+            }
+          }
+        }
+    }
+  }
+}
