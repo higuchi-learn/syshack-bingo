@@ -58,7 +58,7 @@ app/gameroom/[roomId]/host/playing/page.tsx
 概要：ゲームマスター側ゲーム画面。
 ・「抽選」を押したら、app/api/gameroom/[gameId]/host/route.ts のPOSTを叩く
 ・「抽選」を押したら、ガラガラがいい感じに抽選するor番号ルーレットで演出作りたい
-・「抽選」を押してから3秒後ぐらいに、app/api/gameroom/[roomId]/host/playing/route.ts のGETを叩く　　　　　　　　　　　　pointの高い順に順位付け・ソートする（その間にプレイヤーのAPIが評価してるはず）
+・「抽選」を押してから3秒後ぐらいに、app/api/gameroom/[roomId]/host/playing/route.ts のGETを叩く
 ・GET後、もしwinnerFlagが立ってたらなんか演出
 ・ランキング欄は、報酬未獲得者のみで表示する
 ・報酬がもらえる残り人数を表示する
