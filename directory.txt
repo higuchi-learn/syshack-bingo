@@ -12,15 +12,14 @@
 │   │   │   ├── customs-select/
 │   │   │   │   └── route.ts              # POST: ゲームルーム作成
 │   │   │   └── gameroom/
-│   │   │       └── [roomId]/             # 動的ルーティング（roomIdによって異なるAPI）
-│   │   │           ├── host/
-│   │   │           │   └── playing
-│   │   │           │       └──route.ts   # POST: ビンゴの抽選、数秒後順位を更新。GET: player上位10人と下位3人を取得
-│   │   │           └── player/
-│   │   │               ├── sign-in/
-│   │   │               │   └──route.ts   # POST: ビンゴカードを生成、ビンゴカード、プレイヤー名（とカスタム）GET: 他のプレイヤー名
-│   │   │               └── [playerId]/   # 動的ルーティング（plyaerIdによって異なるAPI）
-│   │   │                   └── route.ts  # GET: カード情報・カスタム情報、 POST: ビンゴカードの評価結果
+│   │   │       ├── host/
+│   │   │       │   └── playing
+│   │   │       │       └──route.ts   # POST: ビンゴの抽選、数秒後順位を更新。GET: player上位10人と下位3人を取得
+│   │   │       └── player/
+│   │   │           ├── sign-in/
+│   │   │           │   └──route.ts   # POST: ビンゴカードを生成、ビンゴカード、プレイヤー名（とカスタム）GET: 他のプレイヤー名
+│   │   │           └── playing/      # 動的ルーティング（plyaerIdによって異なるAPI）
+│   │   │               └── route.ts  # GET: カード情報・カスタム情報、 POST: ビンゴカードの評価結果
 │   │   ├── customs-select/
 │   │   │   ├── custom/
 │   │   │   │   ├── page.tsx              # カスタムモードでのカスタム選択後、新規ルーム作成
@@ -30,19 +29,18 @@
 │   │   │   └── speed/
 │   │   │       └── page.tsx              # スピードモードでのカスタム選択後、新規ルーム作成
 │   │   ├── gameroom/                     # ゲーム画面
-│   │   │   └── [roomId]/                 # 動的ルーティング（roomIdによって異なるページ）
-│   │   │       ├── host/
-│   │   │       │   ├── standby/
-│   │   │       │   │   └── page.tsx      # 募集画面
-│   │   │       │   └── playing/
-│   │   │       │       └── page.tsx      # 開催者ゲーム画面
-│   │   │       ├── player/
-│   │   │       │   ├── sign-in/
-│   │   │       │   │   └── page.tsx      # 参加者名前入力画面
-│   │   │       │   └── [playerId]/       # 動的ルーティング（playerIdによって異なるページ）
-│   │   │       │       └── page.tsx      # 参加者ゲーム画面
-│   │   │       └── result/
-│   │   │           └── page.tsx          # リザルト画面（レスポンシブにて対応）
+│   │   │   ├── host/
+│   │   │   │   ├── standby/
+│   │   │   │   │   └── page.tsx      # 募集画面
+│   │   │   │   └── playing/
+│   │   │   │       └── page.tsx      # 開催者ゲーム画面
+│   │   │   ├── player/
+│   │   │   │   ├── sign-in/
+│   │   │   │   │   └── page.tsx      # 参加者名前入力画面
+│   │   │   │   └── playing/          # 動的ルーティング（playerIdによって異なるページ）
+│   │   │   │       └── page.tsx      # 参加者ゲーム画面
+│   │   │   └── result/
+│   │   │       └── page.tsx          # リザルト画面（レスポンシブにて対応）
 │   │   ├── mode-select/
 │   │   │   └── page.tsx                  # モード選択画面
 │   │   ├── favicon.ico                   # ファビコン。
