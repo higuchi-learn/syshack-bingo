@@ -2,13 +2,13 @@
 app/page.tsx
 概要：最初のページ。
 ・当サービスの説明（後回しで可）
-・「ビンゴ会場を作成」クリックで、app/mode-select/page.tsxへ遷移
+・「ビンゴ会場を作成」クリックで、app/mode-select/へ遷移
 
 ------------------------------------------------------------------------------------------------------------
 
 app/mode-select.tsx
 ・モード選択画面。
-・「モード」クリックで、app/customs-select/[ speed | normal | custom ]/page.tsxへ遷移
+・「モード」クリックで、app/customs-select/[ speed | normal | custom ]へ遷移
 
 ------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ app/customs-select/[ speed | normal | custom ]/page.tsx
 ・間に合わなければ、スピードモードとカスタムモードはノーマルモードのコピーでも可
 ・nanoidによって、8桁の固有ゲームIDを生成
 ・「募集開始」をクリックで、app/api/custom-select/route.tsのPOSTを叩く
-・「募集開始」をクリックで、app/gameroom/[roomId]/host/standby/page.tsxへ遷移
+・「募集開始」をクリックで、app/gameroom/[roomId]/host/standby へ遷移
 
     app/api/custom-select/route.ts POSTメソッド
     概要：新規ルームの作成
@@ -46,10 +46,10 @@ app/customs-select/[ speed | normal | custom ]/page.tsx
 
 app/gameroom/[roomId]/host/standby/page.tsx
 概要：募集画面
-・app/gameroom/[roomId]/player/sign-in/page.tsx に飛ばすQRコードを生成
+・app/gameroom/[roomId]/player/sign-in に飛ばすQRコードを生成
 ・onSnapshotでplayers{}を監視し、参加人数をリアルタイムで更新。参加プレイヤー名を表示
 ・「ゲーム開始」クリックで、アラートダイアログ表示
-・「はい」クリックで、app/gameroom/[roomId]/host/playing/page.tsx へ遷移
+・「はい」クリックで、app/gameroom/[roomId]/host/playing へ遷移
 ・「はい」クリックで、statusをplayingに書き換え
 
 ------------------------------------------------------------------------------------------------------------
@@ -64,15 +64,15 @@ app/gameroom/[roomId]/host/playing/page.tsx
 ・報酬がもらえる残り人数を表示する
 ・ランキング上位3人、下位3人のビンゴカードの状況をゲームマスター側で表示（calledNumberにスタイル適用）
 ・「ゲームを終了」クリックで、statusをfinishedに書き換え
-・「ゲームを終了」クリックで、app/gameroom/[roomId]/result/page.tsxへ遷移
+・「ゲームを終了」クリックで、app/gameroom/[roomId]/result へ遷移
 
-    app/api/gameroom/[gameId]/host/playing/route.ts POSTメソッド
+    app/api/gameroom/host/playing/route.ts POSTメソッド
     概要：抽選
     ・calledNumbersを取得
     ・calledNumbersに含まれていない、1-75のランダムな値を生成
     ・calledNumbersに値を追加
 
-    app/api/gameroom/[gameId]/host/playing/route.ts GETメソッド
+    app/api/gameroom/host/playing/route.ts GETメソッド
     概要：プレイヤーのカード情報取得
     ・winners[]を取得 ->人数を渡す
     ・players{}取得
@@ -84,17 +84,17 @@ app/gameroom/[roomId]/host/playing/page.tsx
 
 app/gameroom/[roomId]/player/sign-in/page.tsx
 概要：プレイヤー名入力、（カスタム選択画面）
-・app/api/gameroom/[gameId]/player/sign-in/route.ts のGETを叩く
+・app/api/gameroom/player/sign-in/route.ts のGETを叩く
 ・nanoidによって、8桁の固有プレイヤーIDを生成
 ・「参加」タップ時、もし入力した名前と同じプレイヤー名が先に存在していた場合、再入力を求める（最優先）
-・「参加」タップ時、app/api/gameroom/[gameId]/player/sign-in/route.ts のPOSTを叩く
-・「参加」タップ時、app/gameroom/[gameId]/player/[playerId]/page.tsx へ遷移
+・「参加」タップ時、app/api/gameroom/player/sign-in/route.ts のPOSTを叩く
+・「参加」タップ時、app/gameroom/[gameId]/player/[playerId]へ遷移
 
-    app/api/gameroom/[gameId]/player/sign-in/route.ts GETメソッド
+    app/api/gameroom/player/sign-in/route.ts GETメソッド
     概要：他プレイヤー名の取得
     ・playersのplayerNameを全部持ってくる
 
-    app/api/gameroom/[gameId]/player/sign-in/route.ts POSTメソッド
+    app/api/gameroom/player/sign-in/route.ts POSTメソッド
     概要：プレイヤーの登録、ビンゴカードの生成
     ・ビンゴカードの[4][4]配列（[2][2]は必ず100）を生成
     ・一応、playerNameの重複を許さないモードで書き込み
@@ -130,17 +130,21 @@ app/gameroom/[gameId]/player/[playerId]/page.tsx
 ・onSnapshotでcalledNumbersを監視。追加時、一致するものがあればその番号にアニメーション。3秒待機を入れた後、操作可能にする
 ・アニメーションされている番号をタップすると、スタイル変更
 ・もしFlagが立ってたらなんか演出
-・app/api/gameroom/[gameId]/player/[playerId]/route.ts のGETを叩く
+・app/api/gameroom/player/playing/route.ts のGETを叩く
 ・calledNumberに値が追加されたら、app/api/gameroom/[gameId]/player/[playerId]/route.ts のPOSTを叩く
 ・「カスタムを確認」タップでカスタムを表示
 
-    app/api/gameroom/[gameId]/player/[playerId]/route.ts GETメソッド
+    app/api/gameroom/player/playing/route.ts GETメソッド
     ・customs{}を取得
     ・status
     ・playerId{}を取得
 
-    app/api/gameroom/[gameId]/player/[playerId]/route.ts POSTメソッド
+    app/api/gameroom/player/playing/route.ts POSTメソッド
     ・card[][]と、calledNumbersを照らし合わせて、いろいろ計算
     ・progress{}を上書きする
 
 ------------------------------------------------------------------------------------------------------------
+
+app/gameroom/[gameId]/result/page.tsx
+概要：順位の表示
+・表示する内容は同じなので、レスポンシブにて対応
