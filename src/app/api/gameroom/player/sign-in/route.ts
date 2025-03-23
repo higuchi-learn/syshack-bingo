@@ -1,7 +1,6 @@
 import { db } from '@/firebase/init';
 import { NextResponse } from 'next/server';
 import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { nanoid } from 'nanoid';
 
 // ビンゴカード（5x5, 中央100, 1次元配列）を生成
 function generateBingoCard(): number[] {
@@ -51,9 +50,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const { searchParams } = new URL(req.url);
   const roomId = searchParams.get('roomId');
-  const { playerName } = await req.json();
+  const { playerName, playerId } = await req.json();
 
-  if (!roomId || !playerName || typeof playerName !== 'string') {
+  if (!roomId || !playerName || typeof playerName !== 'string' || !playerId || typeof playerId !== 'string') {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
   }
 
@@ -66,7 +65,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'この名前は既に使用されています' }, { status: 409 });
     }
 
-    const playerId = nanoid(8);
     const card = generateBingoCard();
 
     await setDoc(doc(playersRef, playerId), {
@@ -85,7 +83,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, playerId });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('POST error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

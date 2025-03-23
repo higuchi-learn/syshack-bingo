@@ -33,7 +33,10 @@
 │   │   │       │       └── page.tsx      # 開催者ゲーム画面
 │   │   │       ├── player/
 │   │   │       │   ├── [playerId]/       # 動的ルーティング（playerIdによって異なるページ）
-│   │   │       │   │   └── page.tsx      # 参加者ゲーム画面
+│   │   │       │   │   ├── playing/
+│   │   │       │   │   │   └── page.tsx  # 参加者ゲーム画面
+│   │   │       │   │   └── standby/
+│   │   │       │   │       └── page.tsx  # 参加者待機画面
 │   │   │       │   └── sign-in/
 │   │   │       │       └── page.tsx      # 参加者名前入力画面
 │   │   │       └── result/

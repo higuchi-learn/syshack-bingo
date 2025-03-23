@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import clsx from "clsx"
+import { nanoid } from "nanoid"
 
 export default function PlayerSignInPage() {
   const [playerName, setPlayerName] = useState("")
@@ -39,17 +40,18 @@ export default function PlayerSignInPage() {
     if (!playerName.trim() || error) return
 
     setIsLoading(true)
+    const playerId = nanoid(8)
     try {
       const res = await fetch(`/api/gameroom/player/sign-in?roomId=${roomId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerName }),
+        body: JSON.stringify({ playerName, playerId }),
       })
 
       const data = await res.json()
 
       if (res.ok && data.success) {
-        router.push(`/gameroom/${roomId}/player/waiting`)
+        router.push(`/gameroom/${roomId}/player/${playerId}/standby`)
       } else {
         alert(data.error || "登録に失敗しました")
       }
