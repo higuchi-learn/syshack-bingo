@@ -1,18 +1,18 @@
-import React from "react"
-import clsx from "clsx"
+import React from "react";
+import clsx from "clsx";
 
 type BingoCardProps = {
-  playerName: string
-  card: number[] // 25個, 中央は100（FREE）
-  calledNumbers: number[]
-  highlightNumber?: number | null
-  onHighlightClick?: () => void
+  playerName: string;
+  card: number[]; // 25個, 中央は100（FREE）
+  calledNumbers: number[];
+  highlightNumber?: number | null;
+  onHighlightClick?: () => void;
   colorScheme?: {
-    hit: string
-    free: string
-    default: string
-  }
-}
+    hit: string;
+    free: string;
+    default: string;
+  };
+};
 
 export default function BingoCard({
   playerName,
@@ -26,6 +26,14 @@ export default function BingoCard({
     default: "bg-gray-400 text-white",
   },
 }: BingoCardProps) {
+  if (!card || card.length !== 25) {
+    return (
+      <div className="w-full max-w-xs text-center text-red-500 font-bold">
+        カード情報が無効です
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-xs bg-orange-400 text-white rounded-2xl shadow-lg overflow-hidden border-4 border-blue-900">
       <div className="p-2 bg-gray-100 text-gray-800 font-semibold text-center text-lg rounded-b-xl">
@@ -36,15 +44,15 @@ export default function BingoCard({
 
       <div className="grid grid-cols-5 gap-1 p-2 bg-white">
         {card.map((num, index) => {
-          const isFree = num === 100
-          const isHit = calledNumbers.includes(num)
-          const isHighlight = highlightNumber === num
+          const isFree = num === 100;
+          const isHit = calledNumbers.includes(num);
+          const isHighlight = Number(highlightNumber) === Number(num);
 
           const baseClass = isFree
             ? colorScheme.free
             : isHit
             ? colorScheme.hit
-            : colorScheme.default
+            : colorScheme.default;
 
           return (
             <div
@@ -58,9 +66,9 @@ export default function BingoCard({
             >
               {isFree ? "FREE" : num}
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

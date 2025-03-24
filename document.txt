@@ -127,6 +127,7 @@ app/gameroom/[roomId]/player/sign-in/page.tsx
 app/gameroom/[gameId]/player/[playerId]/page.tsx
 概要：プレイヤー側ゲーム画面
 ・onSnapshotでprogress{}を監視。確率等をリアルタイムで反映
+・onSnapshotでstatusを監視。finishedに変わったら演出後、app/gameroom/[gameId]/result/　へ遷移
 ・onSnapshotでcalledNumbersを監視。追加時、一致するものがあればその番号にアニメーション。3秒待機を入れた後、操作可能にする
 ・アニメーションされている番号をタップすると、スタイル変更
 ・もしFlagが立ってたらなんか演出
@@ -136,7 +137,6 @@ app/gameroom/[gameId]/player/[playerId]/page.tsx
 
     app/api/gameroom/player/playing/route.ts GETメソッド
     ・customs{}を取得
-    ・status
     ・playerId{}を取得
 
     app/api/gameroom/player/playing/route.ts POSTメソッド

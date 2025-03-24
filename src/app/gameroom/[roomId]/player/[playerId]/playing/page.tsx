@@ -1,20 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/firebase/init';
 import BingoCard from '@/components/bingo/BingoCard';
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 type Progress = {
   reachProbability: number;
   bingoProbability: number;
+  reachFlag?: boolean;
+  bingoFlag?: boolean;
 };
 
 type Customs = {
-  [key: string]: boolean;
+  [key: string]: boolean | number | string;
 };
 
 export default function PlayerPlayingPage() {
@@ -29,8 +31,10 @@ export default function PlayerPlayingPage() {
 
   const [highlightedNumber, setHighlightedNumber] = useState<number | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
+  const [effectText, setEffectText] = useState<string | null>(null);
 
-  // 初回 GET: card, playerName, customs
+  const prevCalledRef = useRef<number[]>([]);
+
   useEffect(() => {
     const fetchInitial = async () => {
       const res = await fetch(`/api/gameroom/player/playing?roomId=${roomId}&playerId=${playerId}`);
@@ -48,7 +52,6 @@ export default function PlayerPlayingPage() {
     if (roomId && playerId) fetchInitial();
   }, [roomId, playerId]);
 
-  // onSnapshot: progress監視
   useEffect(() => {
     if (!roomId || !playerId) return;
     const unsub = onSnapshot(doc(db, 'gameRooms', roomId, 'players', playerId), (docSnap) => {
@@ -60,7 +63,6 @@ export default function PlayerPlayingPage() {
     return () => unsub();
   }, [roomId, playerId]);
 
-  // onSnapshot: calledNumbers監視
   useEffect(() => {
     if (!roomId) return;
     const unsub = onSnapshot(doc(db, 'gameRooms', roomId), async (docSnap) => {
@@ -68,63 +70,90 @@ export default function PlayerPlayingPage() {
       if (!data?.calledNumbers) return;
 
       const newCalledNumbers: number[] = data.calledNumbers;
-      if (newCalledNumbers.length > calledNumbers.length) {
-        const lastNum = newCalledNumbers[newCalledNumbers.length - 1];
-        setHighlightedNumber(lastNum);
-        setAcknowledged(false);
+      const prevCalledNumbers = prevCalledRef.current;
 
-        // calledNumbers 更新された → POST
-        await fetch(`/api/gameroom/player/progress?roomId=${roomId}&playerId=${playerId}`, {
+      if (newCalledNumbers.length > prevCalledNumbers.length) {
+        const added = newCalledNumbers.find((num) => !prevCalledNumbers.includes(num));
+
+        if (added !== undefined && card.includes(added)) {
+          setAcknowledged(false);
+          setHighlightedNumber(added);
+        }
+
+        await fetch(`/api/gameroom/player/playing?roomId=${roomId}&playerId=${playerId}`, {
           method: 'POST',
-        });
+        }).catch((err) => console.error('通信エラー:', err));
       }
 
+      prevCalledRef.current = newCalledNumbers;
       setCalledNumbers(newCalledNumbers);
     });
     return () => unsub();
-  }, [roomId, playerId, calledNumbers]);
+  }, [roomId, playerId, card]);
 
   const handleAcknowledge = () => {
     setAcknowledged(true);
+
+    if (progress?.reachFlag || progress?.bingoFlag) {
+      let text = '';
+      if (progress.reachFlag) text += 'REACH';
+      if (progress.bingoFlag) text += text ? ' & BINGO!' : 'BINGO!';
+      setEffectText(text);
+      setTimeout(() => setEffectText(null), 3000);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-blue-900 text-white p-4 flex flex-col items-center">
-      {/* 上部バー */}
+    <main className="min-h-screen bg-blue-900 text-white p-4 flex flex-col items-center relative">
+      {effectText && (
+        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 text-6xl font-extrabold text-pink-500 animate-bounce drop-shadow-xl">
+          {effectText}
+        </div>
+      )}
+
       <div className="flex items-center justify-between w-full max-w-xl mb-4 px-4">
         <span className="text-3xl font-bold">#{rank}</span>
 
         <div className="flex gap-2">
           <div className="bg-yellow-400 text-black rounded-md px-3 py-1 text-center">
             <div className="text-sm font-semibold">リーチ確率</div>
-            <div className="text-2xl font-bold">{progress?.reachProbability ?? 0}%</div>
+            {progress ? (
+              <div className="text-2xl font-bold">{progress.reachProbability}%</div>
+            ) : (
+              <div className="text-sm text-gray-700">読み込み中...</div>
+            )}
           </div>
 
           <div className="bg-purple-400 text-black rounded-md px-3 py-1 text-center">
             <div className="text-sm font-semibold">ビンゴ確率</div>
-            <div className="text-2xl font-bold">{progress?.bingoProbability ?? 0}%</div>
+            {progress ? (
+              <div className="text-2xl font-bold">{progress.bingoProbability}%</div>
+            ) : (
+              <div className="text-sm text-gray-700">読み込み中...</div>
+            )}
           </div>
         </div>
 
-        {/* カスタム確認 */}
         <Dialog>
           <DialogTrigger asChild>
             <button className="bg-white text-black rounded px-2 py-1 text-sm font-semibold">カスタムを確認</button>
           </DialogTrigger>
           <DialogContent className="bg-white text-black max-w-md">
-            <h2 className="text-lg font-bold mb-4">カスタム設定</h2>
+            <DialogTitle className="text-lg font-bold mb-4">カスタム設定</DialogTitle>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>ルール</TableHead>
-                  <TableHead className="text-right">有効</TableHead>
+                  <TableHead className="text-right">値</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.entries(customs).map(([key, value]) => (
+                {Object.entries(customs || {}).map(([key, value]) => (
                   <TableRow key={key}>
                     <TableCell>{key}</TableCell>
-                    <TableCell className="text-right font-bold">{value ? 'True' : 'False'}</TableCell>
+                    <TableCell className="text-right font-bold">
+                      {typeof value === 'boolean' ? (value ? 'True' : 'False') : value}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -133,7 +162,6 @@ export default function PlayerPlayingPage() {
         </Dialog>
       </div>
 
-      {/* カード */}
       <BingoCard
         playerName={playerName}
         card={card}
