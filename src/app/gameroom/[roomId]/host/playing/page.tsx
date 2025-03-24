@@ -26,7 +26,9 @@ export default function HostPlayingPage() {
   const [ranking, setRanking] = useState<Player[]>([])
   const [isDrawing, setIsDrawing] = useState(false)
 
-  // 初回GET
+  const [lastNumber, setLastNumber] = useState<number | null>(null)
+  const [showNumber, setShowNumber] = useState(false)
+
   useEffect(() => {
     fetchData()
   }, [roomId])
@@ -56,6 +58,9 @@ export default function HostPlayingPage() {
       const data = await res.json()
 
       if (res.ok && data.success) {
+        setLastNumber(data.number)
+        setShowNumber(true)
+        setTimeout(() => setShowNumber(false), 3000)
         setTimeout(fetchData, 3000)
       } else {
         alert(data.error || '抽選に失敗しました')
@@ -90,7 +95,6 @@ export default function HostPlayingPage() {
     }
   }
 
-  // 重複を除いたプレイヤーを抽出
   const cardPlayers = [...topPlayers, ...bottomPlayers].filter(
     (player, index, self) =>
       self.findIndex((p) => p.playerName === player.playerName) === index
@@ -102,7 +106,15 @@ export default function HostPlayingPage() {
   ]
 
   return (
-    <main className="p-4 flex flex-col gap-4 text-gray-800">
+    <main className="p-4 flex flex-col gap-4 text-gray-800 relative">
+
+      {/* 抽選番号演出レイヤー */}
+      {showNumber && lastNumber !== null && (
+        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
+          {lastNumber}
+        </div>
+      )}
+
       <div className="flex justify-end">
         <Button onClick={handleFinish} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2">
           ゲームを終了する
@@ -110,7 +122,7 @@ export default function HostPlayingPage() {
       </div>
 
       <div className="flex gap-4">
-        {/* 左側：情報表示と抽選 */}
+        {/* 左：情報と抽選 */}
         <div className="w-1/2 space-y-4">
           <h2 className="text-xl font-bold">参加者 {totalPlayers}名</h2>
 
@@ -150,7 +162,7 @@ export default function HostPlayingPage() {
           </div>
         </div>
 
-        {/* 右側：ビンゴカード表示 */}
+        {/* 右：カード表示 */}
         <div className="w-1/2 grid grid-cols-2 gap-4">
           {paddedCardPlayers.map((player, index) =>
             player ? (
