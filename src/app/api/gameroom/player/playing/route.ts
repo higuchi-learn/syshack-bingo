@@ -103,32 +103,52 @@ export async function POST(req: Request) {
         point += 5;
         if (!(previousProgress.reachCountLines || []).includes(i)) newReach++;
       } else if (sum === 3) {
-        point += 3;
+        point += 2;
+      } else if (sum === 2) {
+        point += 1;
       }
     }
 
-    const corners = [0, 4, 20, 24].filter(i => grid[i] === 1).length;
-    point += corners * 2;
+    const specialIndices = [0, 4, 6, 8, 16, 18, 20, 24];
+    const specialFilled = specialIndices.filter(i => grid[i] === 1).length;
+    point += specialFilled * 2;
 
     const remaining = 75 - calledNumbers.length;
 
-    const reachLineTargets = lines
-      .map((l, idx) => ({ line: l, idx }))
-      .filter(({ line }) => line.reduce((a, b) => a + b, 0) === 3)
-      .flatMap(({ line, idx }) =>
-        line.map((v, i) => v === 0 ? card[Math.floor(idx / 2) * size + i] : null).filter(v => v !== null)
-      );
+    const reachLineTargetsList: number[][] = [];
+    const bingoLineTargetsList: number[][] = [];
 
-    const bingoLineTargets = lines
-      .map((l, idx) => ({ line: l, idx }))
-      .filter(({ line }) => line.reduce((a, b) => a + b, 0) === 4)
-      .map(({ line, idx }) => {
-        const missingIndex = line.findIndex(v => v === 0);
-        return card[Math.floor(idx / 2) * size + missingIndex];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const cardLine = Array.from({ length: size }, (_, j) => {
+        if (i < 10) {
+          const row = i % 2 === 0;
+          return row ? card[Math.floor(i / 2) * size + j] : card[j * size + Math.floor(i / 2)];
+        } else {
+          const diagIndices = i === 10 ? [0, 6, 12, 18, 24] : [4, 8, 12, 16, 20];
+          return card[diagIndices[j]];
+        }
       });
 
-    const reachProbability = remaining > 0 ? Math.round((new Set(reachLineTargets).size / remaining) * 100) : 0;
-    const bingoProbability = remaining > 0 ? Math.round((new Set(bingoLineTargets).size / remaining) * 100) : 0;
+      const missingNumbers = cardLine.filter((_, idx) => line[idx] === 0);
+
+      if (line.reduce((a, b) => a + b, 0) === 4 && missingNumbers.length === 1) {
+        reachLineTargetsList.push(missingNumbers);
+      } else if (line.reduce((a, b) => a + b, 0) === 3 && missingNumbers.length === 2) {
+        bingoLineTargetsList.push(missingNumbers);
+      }
+    }
+
+    const reachLineCount = reachLineTargetsList.length;
+    const bingoLineCount = bingoLineTargetsList.length;
+
+    const reachProbability = remaining > 0
+      ? Math.min(100, Math.round((reachLineCount / remaining) * 100))
+      : 0;
+
+    const bingoProbability = remaining > 0
+      ? Math.min(100, Math.round((bingoLineCount / remaining) * 100))
+      : 0;
 
     const winerFlag = bingoCount >= winLine;
 
