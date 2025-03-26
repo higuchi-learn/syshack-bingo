@@ -1,6 +1,6 @@
 import { db } from '@/firebase/init';
 import { NextResponse } from 'next/server';
-import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, query, where, runTransaction, increment } from 'firebase/firestore';
 
 // ビンゴカード（5x5, 中央100, 1次元配列）を生成
 function generateBingoCard(): number[] {
@@ -57,13 +57,29 @@ export async function POST(req: Request) {
   }
 
   try {
+    const roomRef = doc(db, 'gameRooms', roomId);
     const playersRef = collection(db, 'gameRooms', roomId, 'players');
+    const metaRef = doc(db, 'gameRooms', roomId, 'players', playerId, 'meta', 'info');
+
+    // 名前の重複チェック
     const q = query(playersRef, where('playerName', '==', playerName.trim()));
     const existing = await getDocs(q);
-
     if (!existing.empty) {
       return NextResponse.json({ error: 'この名前は既に使用されています' }, { status: 409 });
     }
+
+    // トランザクションでplayerCountをインクリメントしてrank決定
+    const rank = await runTransaction(db, async (transaction) => {
+      const roomSnap = await transaction.get(roomRef);
+      const currentCount = roomSnap.data()?.playerCount || 0;
+      const newRank = currentCount + 1;
+
+      transaction.update(roomRef, {
+        playerCount: increment(1),
+      });
+
+      return newRank;
+    });
 
     const card = generateBingoCard();
 
@@ -82,8 +98,9 @@ export async function POST(req: Request) {
         winerFlag: false,
       },
     });
+    await setDoc(metaRef, { rank });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, rank });
   } catch (error) {
     console.error('POST error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

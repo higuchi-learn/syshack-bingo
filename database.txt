@@ -11,6 +11,7 @@
         "changeProbability": string: false | light | medium | heavy,  # 確率操作モードの強弱（無効の場合はfalse）
         "rareNumber": boolean,                                        # レアナンバーモード
       },
+      "playerCount": number,
       "calledNumbers": number:[100,],                                 # 抽選済み番号
       "winners": string:[userId,],                                    # 報酬獲得者
         players: {                                                    # サブコレクション。プレイヤーに関する情報
@@ -34,6 +35,7 @@
               "bingoFlag": boolean,                                   # ビンゴフラグ
               "winerFlag": boolean,                                   # リーチフラグ
             }
+            "rank": number
           }
         }
     }

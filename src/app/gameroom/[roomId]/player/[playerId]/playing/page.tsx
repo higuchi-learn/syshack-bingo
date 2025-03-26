@@ -8,25 +8,14 @@ import BingoCard from '@/components/bingo/BingoCard';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
-type Progress = {
-  reachProbability: number;
-  bingoProbability: number;
-  reachFlag?: boolean;
-  bingoFlag?: boolean;
-};
-
-type Customs = {
-  [key: string]: boolean | number | string;
-};
-
 export default function PlayerPlayingPage() {
   const { roomId, playerId } = useParams();
 
   const [playerName, setPlayerName] = useState('');
   const [card, setCard] = useState<number[]>([]);
   const [calledNumbers, setCalledNumbers] = useState<number[]>([]);
-  const [customs, setCustoms] = useState<Customs>({});
-  const [progress, setProgress] = useState<Progress | null>(null);
+  const [customs, setCustoms] = useState({});
+  const [progress, setProgress] = useState(null);
   const [rank, setRank] = useState<number>(0);
 
   const [highlightedNumber, setHighlightedNumber] = useState<number | null>(null);
@@ -35,6 +24,7 @@ export default function PlayerPlayingPage() {
 
   const prevCalledRef = useRef<number[]>([]);
 
+  // 初期データ取得（card, playerName, customs）
   useEffect(() => {
     const fetchInitial = async () => {
       const res = await fetch(`/api/gameroom/player/playing?roomId=${roomId}&playerId=${playerId}`);
@@ -43,7 +33,6 @@ export default function PlayerPlayingPage() {
         setPlayerName(data.playerName);
         setCard(data.card);
         setCustoms(data.customs);
-        setRank(data.rank ?? 0);
       } else {
         alert(data.error || '初期データの取得に失敗しました');
       }
@@ -52,17 +41,39 @@ export default function PlayerPlayingPage() {
     if (roomId && playerId) fetchInitial();
   }, [roomId, playerId]);
 
+  // progress の監視（players/{playerId}）
   useEffect(() => {
     if (!roomId || !playerId) return;
-    const unsub = onSnapshot(doc(db, 'gameRooms', roomId, 'players', playerId), (docSnap) => {
+
+    const playerRef = doc(db, 'gameRooms', roomId, 'players', playerId);
+    const unsub = onSnapshot(playerRef, (docSnap) => {
       const data = docSnap.data();
       if (data?.progress) {
-        setProgress(data.progress);
+        setProgress((prev) =>
+          JSON.stringify(prev) !== JSON.stringify(data.progress) ? data.progress : prev
+        );
       }
     });
+
     return () => unsub();
   }, [roomId, playerId]);
 
+  // rank の監視（players/{playerId}/meta/info）
+  useEffect(() => {
+    if (!roomId || !playerId) return;
+
+    const metaRef = doc(db, 'gameRooms', roomId, 'players', playerId, 'meta', 'info');
+    const unsubMeta = onSnapshot(metaRef, (docSnap) => {
+      const data = docSnap.data();
+      if (typeof data?.rank === 'number') {
+        setRank((prev) => prev !== data.rank ? data.rank : prev);
+      }
+    });
+
+    return () => unsubMeta();
+  }, [roomId, playerId]);
+
+  // calledNumbers の監視（gameRooms/{roomId}）
   useEffect(() => {
     if (!roomId) return;
     const unsub = onSnapshot(doc(db, 'gameRooms', roomId), async (docSnap) => {
@@ -91,6 +102,7 @@ export default function PlayerPlayingPage() {
     return () => unsub();
   }, [roomId, playerId, card]);
 
+  // 番号クリックで演出処理
   const handleAcknowledge = () => {
     setAcknowledged(true);
 

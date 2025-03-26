@@ -33,7 +33,6 @@ export async function GET(req: Request) {
       playerName: playerData.playerName,
       card: playerData.card,
       customs: roomData.customs || {},
-      rank: null,
     });
   } catch (error) {
     console.error('GET /player/playing error:', error);

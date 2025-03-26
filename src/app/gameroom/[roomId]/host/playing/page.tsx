@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import BingoCard from '@/components/bingo/BingoCard'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '@/firebase/init'
 
 type Player = {
   playerName: string
@@ -75,23 +77,15 @@ export default function HostPlayingPage() {
 
   const handleFinish = async () => {
     const ok = confirm('ゲームを終了しますか？')
-    if (!ok) return
+    if (!ok || !roomId) return
 
     try {
-      const res = await fetch(`/api/gameroom/status?roomId=${roomId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'finished' }),
-      })
-      if (res.ok) {
-        router.push(`/gameroom/${roomId}/result`)
-      } else {
-        const data = await res.json()
-        alert(data.error || 'ゲーム終了に失敗しました')
-      }
+      const roomRef = doc(db, 'gameRooms', String(roomId))
+      await updateDoc(roomRef, { status: 'finished' })
+      router.push(`/gameroom/${roomId}/result`)
     } catch (error) {
       console.error(error)
-      alert('通信エラーが発生しました')
+      alert('Firestoreの更新に失敗しました')
     }
   }
 
@@ -107,8 +101,6 @@ export default function HostPlayingPage() {
 
   return (
     <main className="p-4 flex flex-col gap-4 text-gray-800 relative">
-
-      {/* 抽選番号演出レイヤー */}
       {showNumber && lastNumber !== null && (
         <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
           {lastNumber}
@@ -122,7 +114,6 @@ export default function HostPlayingPage() {
       </div>
 
       <div className="flex gap-4">
-        {/* 左：情報と抽選 */}
         <div className="w-1/2 space-y-4">
           <h2 className="text-xl font-bold">参加者 {totalPlayers}名</h2>
 
@@ -157,12 +148,11 @@ export default function HostPlayingPage() {
               disabled={isDrawing}
               className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold text-xl px-8 py-4 rounded-xl"
             >
-              {isDrawing ? "抽選中..." : "抽選"}
+              {isDrawing ? '抽選中...' : '抽選'}
             </Button>
           </div>
         </div>
 
-        {/* 右：カード表示 */}
         <div className="w-1/2 grid grid-cols-2 gap-4">
           {paddedCardPlayers.map((player, index) =>
             player ? (
@@ -172,9 +162,9 @@ export default function HostPlayingPage() {
                 card={player.card.flat()}
                 calledNumbers={calledNumbers}
                 colorScheme={{
-                  hit: "bg-green-500 text-white",
-                  free: "bg-lime-400 text-white",
-                  default: "bg-gray-300 text-white",
+                  hit: 'bg-green-500 text-white',
+                  free: 'bg-lime-400 text-white',
+                  default: 'bg-gray-300 text-white',
                 }}
               />
             ) : (
