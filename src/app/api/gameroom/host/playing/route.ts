@@ -1,6 +1,13 @@
 import { db } from '@/firebase/init'
 import { NextResponse } from 'next/server'
-import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  writeBatch,
+} from 'firebase/firestore'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -22,19 +29,39 @@ export async function GET(req: Request) {
     const playersRef = collection(db, 'gameRooms', roomId, 'players')
     const playerSnaps = await getDocs(playersRef)
 
-    const players = playerSnaps.docs.map((doc) => ({
-      playerName: doc.data().playerName,
-      card: doc.data().card,
-      progress: doc.data().progress,
-    }))
+    const players = playerSnaps.docs
+      .map((doc) => ({
+        id: doc.id,
+        playerName: doc.data().playerName,
+        card: doc.data().card,
+        progress: doc.data().progress,
+        point: doc.data().progress?.point ?? 0,
+      }))
+      .sort((a, b) => b.point - a.point)
+
+    const reachAchievers = players
+      .filter((p) => p.progress?.reachFlag)
+      .map((p) => p.playerName)
+
+    const bingoAchievers = players
+      .filter((p) => p.progress?.bingoFlag)
+      .map((p) => p.playerName)
+
+    const winAchievers = (roomData.winners || []).map((id: string) => {
+      const playerDoc = playerSnaps.docs.find((d) => d.id === id)
+      return playerDoc?.data().playerName || '???'
+    })
 
     return NextResponse.json({
       success: true,
       calledNumbers,
-      topPlayers: players.slice(0, 3), // 仮：上位3人
-      bottomPlayers: players.slice(-3), // 仮：下位3人
+      topPlayers: players.slice(0, 3),
+      bottomPlayers: players.slice(-3),
       ranking: players.slice(0, 10),
       totalPlayers: players.length,
+      reachAchievers,
+      bingoAchievers,
+      winAchievers,
     })
   } catch (error) {
     console.error('GET error:', error)
@@ -70,6 +97,24 @@ export async function POST(req: Request) {
     const updatedNumbers = [...calledNumbers, newNumber]
 
     await updateDoc(roomRef, { calledNumbers: updatedNumbers })
+
+    // ↓ ランキング更新（progress.point をもとに meta/info.rank に保存）
+    const playersRef = collection(db, 'gameRooms', roomId, 'players')
+    const playerSnaps = await getDocs(playersRef)
+
+    const ranked = playerSnaps.docs
+      .map((doc) => ({
+        playerId: doc.id,
+        point: doc.data().progress?.point ?? 0,
+      }))
+      .sort((a, b) => b.point - a.point)
+
+    const batch = writeBatch(db)
+    ranked.forEach((player, index) => {
+      const metaRef = doc(db, 'gameRooms', roomId, 'players', player.playerId, 'meta', 'info')
+      batch.set(metaRef, { rank: index + 1 }, { merge: true })
+    })
+    await batch.commit()
 
     return NextResponse.json({ success: true, number: newNumber })
   } catch (error) {

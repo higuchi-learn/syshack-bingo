@@ -66,7 +66,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'ルームが存在しません' }, { status: 404 });
     }
 
-    const calledNumbers: number[] = roomSnap.data().calledNumbers ?? [];
+    const roomData = roomSnap.data();
+    const calledNumbers: number[] = roomData.calledNumbers ?? [];
+    const winLine: number = roomData.customs?.winLine ?? 1;
+
     const size = 5;
     const grid = card.map((num) => num === 100 || calledNumbers.includes(num) ? 1 : 0);
     const lines: number[][] = [];
@@ -127,6 +130,8 @@ export async function POST(req: Request) {
     const reachProbability = remaining > 0 ? Math.round((new Set(reachLineTargets).size / remaining) * 100) : 0;
     const bingoProbability = remaining > 0 ? Math.round((new Set(bingoLineTargets).size / remaining) * 100) : 0;
 
+    const winerFlag = bingoCount >= winLine;
+
     const progress = {
       hitCount,
       reachCount,
@@ -136,12 +141,22 @@ export async function POST(req: Request) {
       point,
       reachFlag: newReach > 0,
       bingoFlag: newBingo > 0,
-      winerFlag: false,
+      winerFlag,
       reachCountLines: lines.map((l, i) => l.reduce((a, b) => a + b, 0) === 4 ? i : -1).filter(i => i >= 0),
       bingoCountLines: lines.map((l, i) => l.reduce((a, b) => a + b, 0) === 5 ? i : -1).filter(i => i >= 0),
     };
 
     await updateDoc(playerRef, { progress });
+
+    if (winerFlag) {
+      const winners: string[] = roomData.winners || [];
+      if (!winners.includes(playerId)) {
+        await updateDoc(roomRef, {
+          winners: [...winners, playerId],
+        });
+      }
+    }
+
     return NextResponse.json({ success: true, progress });
   } catch (error) {
     console.error('POST /player/playing error:', error);

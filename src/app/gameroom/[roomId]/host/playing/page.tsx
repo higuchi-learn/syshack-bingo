@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -14,6 +15,8 @@ type Player = {
     hitCount: number
     reachCount: number
     bingoCount: number
+    reachProbability: number
+    bingoProbability: number
   }
 }
 
@@ -26,8 +29,10 @@ export default function HostPlayingPage() {
   const [bottomPlayers, setBottomPlayers] = useState<Player[]>([])
   const [totalPlayers, setTotalPlayers] = useState<number>(0)
   const [ranking, setRanking] = useState<Player[]>([])
+  const [reachAchievers, setReachAchievers] = useState<string[]>([])
+  const [bingoAchievers, setBingoAchievers] = useState<string[]>([])
+  const [winAchievers, setWinAchievers] = useState<string[]>([])
   const [isDrawing, setIsDrawing] = useState(false)
-
   const [lastNumber, setLastNumber] = useState<number | null>(null)
   const [showNumber, setShowNumber] = useState(false)
 
@@ -44,6 +49,12 @@ export default function HostPlayingPage() {
       setBottomPlayers(data.bottomPlayers || [])
       setTotalPlayers(data.totalPlayers || 0)
       setRanking(data.ranking || [])
+      setReachAchievers(data.reachAchievers || []);
+      setTimeout(() => setReachAchievers([]), 5000);
+      setBingoAchievers(data.bingoAchievers || []);
+      setTimeout(() => setBingoAchievers([]), 5000);
+      setWinAchievers(data.winAchievers || []);
+      setTimeout(() => setWinAchievers([]), 5000);
     } else {
       alert(data.error || '情報取得に失敗しました')
     }
@@ -54,11 +65,8 @@ export default function HostPlayingPage() {
 
     setIsDrawing(true)
     try {
-      const res = await fetch(`/api/gameroom/host/playing?roomId=${roomId}`, {
-        method: 'POST',
-      })
+      const res = await fetch(`/api/gameroom/host/playing?roomId=${roomId}`, { method: 'POST' })
       const data = await res.json()
-
       if (res.ok && data.success) {
         setLastNumber(data.number)
         setShowNumber(true)
@@ -78,7 +86,6 @@ export default function HostPlayingPage() {
   const handleFinish = async () => {
     const ok = confirm('ゲームを終了しますか？')
     if (!ok || !roomId) return
-
     try {
       const roomRef = doc(db, 'gameRooms', String(roomId))
       await updateDoc(roomRef, { status: 'finished' })
@@ -90,19 +97,33 @@ export default function HostPlayingPage() {
   }
 
   const cardPlayers = [...topPlayers, ...bottomPlayers].filter(
-    (player, index, self) =>
-      self.findIndex((p) => p.playerName === player.playerName) === index
+    (player, index, self) => self.findIndex((p) => p.playerName === player.playerName) === index
   )
 
-  const paddedCardPlayers = [
-    ...cardPlayers,
-    ...Array(6 - cardPlayers.length).fill(null),
-  ]
+  const paddedCardPlayers = [...cardPlayers, ...Array(6 - cardPlayers.length).fill(null)]
 
   return (
     <main className="p-4 flex flex-col gap-4 text-gray-800 relative">
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 text-center space-y-2">
+        {reachAchievers.map((name, i) => (
+          <div key={`reach-${i}`} className="text-yellow-400 text-2xl font-bold animate-pulse drop-shadow">
+            🎯 REACH! {name}
+          </div>
+        ))}
+        {bingoAchievers.map((name, i) => (
+          <div key={`bingo-${i}`} className="text-purple-400 text-3xl font-bold animate-bounce drop-shadow">
+            🎉 BINGO! {name}
+          </div>
+        ))}
+        {winAchievers.map((name, i) => (
+          <div key={`win-${i}`} className="text-green-500 text-4xl font-extrabold animate-bounce drop-shadow-lg">
+            🏆 WINNER! {name}
+          </div>
+        ))}
+      </div>
+
       {showNumber && lastNumber !== null && (
-        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
+        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-40 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
           {lastNumber}
         </div>
       )}
@@ -116,14 +137,15 @@ export default function HostPlayingPage() {
       <div className="flex gap-4">
         <div className="w-1/2 space-y-4">
           <h2 className="text-xl font-bold">参加者 {totalPlayers}名</h2>
-
           <div className="bg-gray-100 rounded-xl p-4">
             <h3 className="text-lg font-semibold mb-2">TOP 10</h3>
             <table className="w-full text-left text-sm">
               <thead>
                 <tr>
+                  <th className="px-1">順位</th>
                   <th className="px-1">ユーザー</th>
-                  <th className="px-1">ヒット</th>
+                  <th className="px-1">リーチ確率</th>
+                  <th className="px-1">ビンゴ確率</th>
                   <th className="px-1">リーチ</th>
                   <th className="px-1">ビンゴ</th>
                 </tr>
@@ -131,10 +153,12 @@ export default function HostPlayingPage() {
               <tbody>
                 {ranking.map((player, i) => (
                   <tr key={i}>
+                    <td className="px-1 font-bold">#{i + 1}</td>
                     <td className="px-1">{player.playerName}</td>
-                    <td className="px-1">{player.progress.hitCount}</td>
-                    <td className="px-1">{player.progress.reachCount}</td>
-                    <td className="px-1">{player.progress.bingoCount}</td>
+                    <td className="px-1">{player.progress?.reachProbability ?? 0}%</td>
+                    <td className="px-1">{player.progress?.bingoProbability ?? 0}%</td>
+                    <td className="px-1">{player.progress?.reachCount ?? 0}</td>
+                    <td className="px-1">{player.progress?.bingoCount ?? 0}</td>
                   </tr>
                 ))}
               </tbody>
