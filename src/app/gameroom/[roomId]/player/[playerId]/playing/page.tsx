@@ -45,13 +45,13 @@ export default function PlayerPlayingPage() {
   useEffect(() => {
     if (!roomId || !playerId) return;
 
+    if (typeof roomId !== 'string' || typeof playerId !== 'string') return;
+
     const playerRef = doc(db, 'gameRooms', roomId, 'players', playerId);
     const unsub = onSnapshot(playerRef, (docSnap) => {
       const data = docSnap.data();
       if (data?.progress) {
-        setProgress((prev) =>
-          JSON.stringify(prev) !== JSON.stringify(data.progress) ? data.progress : prev
-        );
+        setProgress((prev) => (JSON.stringify(prev) !== JSON.stringify(data.progress) ? data.progress : prev));
       }
     });
 
@@ -66,7 +66,7 @@ export default function PlayerPlayingPage() {
     const unsubMeta = onSnapshot(metaRef, (docSnap) => {
       const data = docSnap.data();
       if (typeof data?.rank === 'number') {
-        setRank((prev) => prev !== data.rank ? data.rank : prev);
+        setRank((prev) => (prev !== data.rank ? data.rank : prev));
       }
     });
 
