@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     const diag2 = [4, 8, 12, 16, 20].map(i => grid[i]);
     lines.push(diag1, diag2);
 
-    let hitCount = grid.filter(v => v === 1).length;
+    const hitCount = grid.filter(v => v === 1).length;
     let bingoCount = 0;
     let reachCount = 0;
     let point = hitCount;
