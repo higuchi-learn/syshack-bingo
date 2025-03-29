@@ -125,9 +125,9 @@ export async function POST(req: Request) {
         point += 5;
         if (!(previousProgress.reachCountLines || []).includes(i)) newReach++;
         reachCountLines.push(i);
-        reachLineTargetsList.push(missingNumbers); // ← 今リーチ状態 → あと1つでビンゴ
+        reachLineTargetsList.push(missingNumbers);
       } else if (sum === 3 && missingNumbers.length === 2) {
-        bingoLineTargetsList.push(missingNumbers); // ← あと1つでリーチ状態
+        bingoLineTargetsList.push(missingNumbers);
       } else if (sum === 3) {
         point += 2;
       } else if (sum === 2) {
@@ -141,9 +141,8 @@ export async function POST(req: Request) {
 
     const remaining = 75 - calledNumbers.length;
 
-    // ✅ 正しく対応を逆にする
-    const bingoTargetNumbers = [...new Set(reachLineTargetsList.flat())]; // ← ビンゴになるマス
-    const reachTargetNumbers = [...new Set(bingoLineTargetsList.flat())]; // ← リーチになるマス
+    const bingoTargetNumbers = [...new Set(reachLineTargetsList.flat())];
+    const reachTargetNumbers = [...new Set(bingoLineTargetsList.flat())];
 
     const bingoProbability = remaining > 0
       ? Math.min(100, Math.round((bingoTargetNumbers.length / remaining) * 100))
@@ -154,6 +153,7 @@ export async function POST(req: Request) {
       : 0;
 
     const winerFlag = bingoCount >= winLine;
+    const drawCount = calledNumbers.length;
 
     const progress = {
       hitCount,
@@ -167,17 +167,34 @@ export async function POST(req: Request) {
       winerFlag,
       reachCountLines,
       bingoCountLines,
+      reachDrawCount: previousProgress.reachDrawCount ?? (newReach > 0 ? drawCount : null),
+      bingoDrawCount: previousProgress.bingoDrawCount ?? (newBingo > 0 ? drawCount : null),
+      wonDrawCount: previousProgress.wonDrawCount ?? null,
     };
+
+    // wonDrawCount を必要に応じて更新
+    if (winerFlag && !(previousProgress.wonDrawCount >= 0)) {
+      progress.wonDrawCount = drawCount;
+    }
 
     await updateDoc(playerRef, { progress });
 
     if (winerFlag) {
       const winners: string[] = roomData.winners || [];
-      if (!winners.includes(playerId)) {
-        await updateDoc(roomRef, {
+      const isAlreadyWinner = winners.includes(playerId);
+
+      const updates = [];
+
+      if (!isAlreadyWinner) {
+        updates.push(updateDoc(roomRef, {
           winners: [...winners, playerId],
-        });
+        }));
       }
+
+      const metaRef = doc(db, 'gameRooms', roomId, 'players', playerId, 'meta', 'info');
+      updates.push(updateDoc(metaRef, { won: true }));
+
+      await Promise.all(updates);
     }
 
     return NextResponse.json({ success: true, progress });

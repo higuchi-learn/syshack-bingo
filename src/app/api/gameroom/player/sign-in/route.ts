@@ -98,7 +98,11 @@ export async function POST(req: Request) {
         winerFlag: false,
       },
     });
-    await setDoc(metaRef, { rank });
+
+    await setDoc(metaRef, {
+      rank,
+      won: false,
+    });
 
     return NextResponse.json({ success: true, rank });
   } catch (error) {

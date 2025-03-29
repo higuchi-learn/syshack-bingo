@@ -29,21 +29,34 @@ export async function GET(req: Request) {
     const playersRef = collection(db, 'gameRooms', roomId, 'players')
     const playerSnaps = await getDocs(playersRef)
 
-    const players = playerSnaps.docs
-      .map((doc) => ({
-        id: doc.id,
-        playerName: doc.data().playerName,
-        card: doc.data().card,
-        progress: doc.data().progress,
-        point: doc.data().progress?.point ?? 0,
-      }))
-      .sort((a, b) => b.point - a.point)
+    const players = await Promise.all(
+      playerSnaps.docs.map(async (docSnap) => {
+        const playerData = docSnap.data()
+        const metaRef = doc(db, 'gameRooms', roomId, 'players', docSnap.id, 'meta', 'info')
+        const metaSnap = await getDoc(metaRef)
+        const meta = metaSnap.exists() ? metaSnap.data() : {}
 
-    const reachAchievers = players
+        return {
+          id: docSnap.id,
+          playerName: playerData.playerName,
+          card: playerData.card,
+          progress: playerData.progress,
+          point: playerData.progress?.point ?? 0,
+          meta,
+        }
+      })
+    )
+
+    // won: true のプレイヤーを除外
+    const visiblePlayers = players.filter(p => p.meta?.won !== true)
+
+    const sorted = visiblePlayers.sort((a, b) => b.point - a.point)
+
+    const reachAchievers = sorted
       .filter((p) => p.progress?.reachFlag)
       .map((p) => p.playerName)
 
-    const bingoAchievers = players
+    const bingoAchievers = sorted
       .filter((p) => p.progress?.bingoFlag)
       .map((p) => p.playerName)
 
@@ -55,10 +68,10 @@ export async function GET(req: Request) {
     return NextResponse.json({
       success: true,
       calledNumbers,
-      topPlayers: players.slice(0, 3),
-      bottomPlayers: players.slice(-3),
-      ranking: players.slice(0, 10),
-      totalPlayers: players.length,
+      topPlayers: sorted.slice(0, 3),
+      bottomPlayers: sorted.slice(-3),
+      ranking: sorted.slice(0, 10),
+      totalPlayers: sorted.length,
       reachAchievers,
       bingoAchievers,
       winAchievers,
@@ -68,6 +81,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+
 
 export async function POST(req: Request) {
   const { searchParams } = new URL(req.url)
