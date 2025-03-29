@@ -92,16 +92,42 @@ export async function POST(req: Request) {
     let newBingo = 0;
     let newReach = 0;
 
+    const reachLineTargetsList: number[][] = [];
+    const bingoLineTargetsList: number[][] = [];
+    const reachCountLines: number[] = [];
+    const bingoCountLines: number[] = [];
+
     for (let i = 0; i < lines.length; i++) {
-      const sum = lines[i].reduce((a, b) => a + b, 0);
+      const line = lines[i];
+
+      const cardLine = Array.from({ length: size }, (_, j) => {
+        if (i < 10) {
+          const row = i % 2 === 0;
+          return row
+            ? card[Math.floor(i / 2) * size + j]
+            : card[j * size + Math.floor(i / 2)];
+        } else {
+          const diagIndices = i === 10 ? [0, 6, 12, 18, 24] : [4, 8, 12, 16, 20];
+          return card[diagIndices[j]];
+        }
+      });
+
+      const sum = line.reduce((a, b) => a + b, 0);
+      const missingNumbers = cardLine.filter((_, idx) => line[idx] === 0);
+
       if (sum === 5) {
         bingoCount++;
         point += 10;
         if (!(previousProgress.bingoCountLines || []).includes(i)) newBingo++;
-      } else if (sum === 4) {
+        bingoCountLines.push(i);
+      } else if (sum === 4 && missingNumbers.length === 1) {
         reachCount++;
         point += 5;
         if (!(previousProgress.reachCountLines || []).includes(i)) newReach++;
+        reachCountLines.push(i);
+        reachLineTargetsList.push(missingNumbers); // ← 今リーチ状態 → あと1つでビンゴ
+      } else if (sum === 3 && missingNumbers.length === 2) {
+        bingoLineTargetsList.push(missingNumbers); // ← あと1つでリーチ状態
       } else if (sum === 3) {
         point += 2;
       } else if (sum === 2) {
@@ -115,39 +141,16 @@ export async function POST(req: Request) {
 
     const remaining = 75 - calledNumbers.length;
 
-    const reachLineTargetsList: number[][] = [];
-    const bingoLineTargetsList: number[][] = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const cardLine = Array.from({ length: size }, (_, j) => {
-        if (i < 10) {
-          const row = i % 2 === 0;
-          return row ? card[Math.floor(i / 2) * size + j] : card[j * size + Math.floor(i / 2)];
-        } else {
-          const diagIndices = i === 10 ? [0, 6, 12, 18, 24] : [4, 8, 12, 16, 20];
-          return card[diagIndices[j]];
-        }
-      });
-
-      const missingNumbers = cardLine.filter((_, idx) => line[idx] === 0);
-
-      if (line.reduce((a, b) => a + b, 0) === 4 && missingNumbers.length === 1) {
-        reachLineTargetsList.push(missingNumbers);
-      } else if (line.reduce((a, b) => a + b, 0) === 3 && missingNumbers.length === 2) {
-        bingoLineTargetsList.push(missingNumbers);
-      }
-    }
-
-    const reachLineCount = reachLineTargetsList.length;
-    const bingoLineCount = bingoLineTargetsList.length;
-
-    const reachProbability = remaining > 0
-      ? Math.min(100, Math.round((reachLineCount / remaining) * 100))
-      : 0;
+    // ✅ 正しく対応を逆にする
+    const bingoTargetNumbers = [...new Set(reachLineTargetsList.flat())]; // ← ビンゴになるマス
+    const reachTargetNumbers = [...new Set(bingoLineTargetsList.flat())]; // ← リーチになるマス
 
     const bingoProbability = remaining > 0
-      ? Math.min(100, Math.round((bingoLineCount / remaining) * 100))
+      ? Math.min(100, Math.round((bingoTargetNumbers.length / remaining) * 100))
+      : 0;
+
+    const reachProbability = remaining > 0
+      ? Math.min(100, Math.round((reachTargetNumbers.length / remaining) * 100))
       : 0;
 
     const winerFlag = bingoCount >= winLine;
@@ -162,8 +165,8 @@ export async function POST(req: Request) {
       reachFlag: newReach > 0,
       bingoFlag: newBingo > 0,
       winerFlag,
-      reachCountLines: lines.map((l, i) => l.reduce((a, b) => a + b, 0) === 4 ? i : -1).filter(i => i >= 0),
-      bingoCountLines: lines.map((l, i) => l.reduce((a, b) => a + b, 0) === 5 ? i : -1).filter(i => i >= 0),
+      reachCountLines,
+      bingoCountLines,
     };
 
     await updateDoc(playerRef, { progress });
