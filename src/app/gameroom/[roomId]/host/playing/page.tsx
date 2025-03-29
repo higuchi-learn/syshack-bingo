@@ -16,6 +16,7 @@ type Player = {
     bingoCount: number;
     reachProbability: number;
     bingoProbability: number;
+    point: number;
   };
 };
 
