@@ -1,58 +1,50 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/table'
-import BingoCard from '@/components/bingo/BingoCard'
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import BingoCard from '@/components/bingo/BingoCard';
 
 type Player = {
-  id: string
-  playerName: string
+  id: string;
+  playerName: string;
   progress: {
-    point: number
-    hitCount: number
-    reachCount: number
-    bingoCount: number
-    reachDrawCount: number | null
-    bingoDrawCount: number | null
-    wonDrawCount: number | null
-  }
+    point: number;
+    hitCount: number;
+    reachCount: number;
+    bingoCount: number;
+    reachDrawCount: number | null;
+    bingoDrawCount: number | null;
+    wonDrawCount: number | null;
+  };
   meta: {
-    won?: boolean
-  }
-}
+    won?: boolean;
+  };
+};
 
 export default function GameResultPage() {
-  const { roomId } = useParams()
-  const [players, setPlayers] = useState<Player[]>([])
-  const [calledNumbers, setCalledNumbers] = useState<number[]>([])
-  const [lowestCard, setLowestCard] = useState<number[]>([])
+  const { roomId } = useParams();
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [calledNumbers, setCalledNumbers] = useState<number[]>([]);
+  const [lowestCard, setLowestCard] = useState<number[]>([]);
 
   useEffect(() => {
-    if (!roomId) return
+    if (!roomId) return;
     fetch(`/api/gameroom/result?roomId=${roomId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setPlayers(data.players)
-          setCalledNumbers(data.calledNumbers)
-          setLowestCard(data.lowestCard)
+          setPlayers(data.players);
+          setCalledNumbers(data.calledNumbers);
+          setLowestCard(data.lowestCard);
         }
       })
-      .catch((err) => console.error(err))
-  }, [roomId])
+      .catch((err) => console.error(err));
+  }, [roomId]);
 
-  const renderCount = (n: number | null | undefined) =>
-    n === null || n === undefined ? '-' : `${n}回目`
+  const renderCount = (n: number | null | undefined) => (n === null || n === undefined ? '-' : `${n}回目`);
 
   return (
     <main className="p-4 flex flex-col lg:flex-row gap-4">
@@ -66,7 +58,7 @@ export default function GameResultPage() {
                 <TableRow>
                   <TableHead>順位</TableHead>
                   <TableHead>プレイヤー名</TableHead>
-                  <TableHead>報酬</TableHead>
+                  <TableHead>報酬獲得回</TableHead>
                   <TableHead>初ビンゴ</TableHead>
                   <TableHead>初リーチ</TableHead>
                   <TableHead>ビンゴ数</TableHead>
@@ -79,9 +71,7 @@ export default function GameResultPage() {
                   <TableRow key={player.id}>
                     <TableCell className="font-bold">#{index + 1}</TableCell>
                     <TableCell>{player.playerName}</TableCell>
-                    <TableCell>
-                      {player.meta?.won ? '🏆' : '-'}
-                    </TableCell>
+                    <TableCell>{renderCount(player.progress?.wonDrawCount)}</TableCell>
                     <TableCell>{renderCount(player.progress?.bingoDrawCount)}</TableCell>
                     <TableCell>{renderCount(player.progress?.reachDrawCount)}</TableCell>
                     <TableCell>{player.progress?.bingoCount ?? 0}</TableCell>
@@ -118,5 +108,5 @@ export default function GameResultPage() {
         </Card>
       </div>
     </main>
-  )
+  );
 }

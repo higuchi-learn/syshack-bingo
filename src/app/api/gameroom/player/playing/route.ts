@@ -169,11 +169,11 @@ export async function POST(req: Request) {
       bingoCountLines,
       reachDrawCount: previousProgress.reachDrawCount ?? (newReach > 0 ? drawCount : null),
       bingoDrawCount: previousProgress.bingoDrawCount ?? (newBingo > 0 ? drawCount : null),
-      wonDrawCount: previousProgress.wonDrawCount ?? null,
+      wonDrawCount: previousProgress.wonDrawCount,
     };
 
-    // wonDrawCount を必要に応じて更新
-    if (winerFlag && !(previousProgress.wonDrawCount >= 0)) {
+    // wonDrawCount を初回のみセット
+    if (winerFlag && progress.wonDrawCount == null) {
       progress.wonDrawCount = drawCount;
     }
 
