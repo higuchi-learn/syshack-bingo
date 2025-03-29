@@ -62,7 +62,7 @@ export default function PlayerPlayingPage() {
   useEffect(() => {
     if (!roomId || !playerId) return;
 
-    const metaRef = doc(db, 'gameRooms', roomId, 'players', playerId, 'meta', 'info');
+    const metaRef = doc(db, 'gameRooms', roomId as string, 'players', playerId as string, 'meta', 'info');
     const unsubMeta = onSnapshot(metaRef, (docSnap) => {
       const data = docSnap.data();
       if (typeof data?.rank === 'number') {
