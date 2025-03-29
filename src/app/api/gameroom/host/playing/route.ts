@@ -49,7 +49,6 @@ export async function GET(req: Request) {
 
     // won: true のプレイヤーを除外
     const visiblePlayers = players.filter(p => p.meta?.won !== true)
-
     const sorted = visiblePlayers.sort((a, b) => b.point - a.point)
 
     const reachAchievers = sorted
@@ -60,10 +59,9 @@ export async function GET(req: Request) {
       .filter((p) => p.progress?.bingoFlag)
       .map((p) => p.playerName)
 
-    const winAchievers = (roomData.winners || []).map((id: string) => {
-      const playerDoc = playerSnaps.docs.find((d) => d.id === id)
-      return playerDoc?.data().playerName || '???'
-    })
+    const winAchievers = players
+      .filter(p => p.meta?.won !== true && p.progress?.winerFlag === true)
+      .map(p => p.playerName)
 
     return NextResponse.json({
       success: true,

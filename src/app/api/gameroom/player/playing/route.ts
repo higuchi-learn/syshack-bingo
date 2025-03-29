@@ -152,7 +152,9 @@ export async function POST(req: Request) {
       ? Math.min(100, Math.round((reachTargetNumbers.length / remaining) * 100))
       : 0;
 
-    const winerFlag = bingoCount >= winLine;
+    const previousBingoCount = previousProgress.bingoCount ?? 0;
+    const winerFlag = previousBingoCount < winLine && bingoCount >= winLine;
+
     const drawCount = calledNumbers.length;
 
     const progress = {
@@ -169,13 +171,8 @@ export async function POST(req: Request) {
       bingoCountLines,
       reachDrawCount: previousProgress.reachDrawCount ?? (newReach > 0 ? drawCount : null),
       bingoDrawCount: previousProgress.bingoDrawCount ?? (newBingo > 0 ? drawCount : null),
-      wonDrawCount: previousProgress.wonDrawCount,
+      wonDrawCount: previousProgress.wonDrawCount ?? (winerFlag ? drawCount : null),
     };
-
-    // wonDrawCount を初回のみセット
-    if (winerFlag && progress.wonDrawCount == null) {
-      progress.wonDrawCount = drawCount;
-    }
 
     await updateDoc(playerRef, { progress });
 
@@ -203,3 +200,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'サーバーエラーが発生しました' }, { status: 500 });
   }
 }
+
