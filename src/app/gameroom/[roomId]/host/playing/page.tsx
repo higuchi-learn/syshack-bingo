@@ -97,15 +97,15 @@ export default function HostPlayingPage() {
     }
   };
 
-  const cardPlayers = [...topPlayers, ...bottomPlayers].filter(
-    (player, index, self) => self.findIndex((p) => p.playerName === player.playerName) === index,
-  );
-
-  const paddedCardPlayers = [...cardPlayers, ...Array(6 - cardPlayers.length).fill(null)];
+  // カード表示の並びを 3列×2行：上3人(top)、下3人(bottom)
+  const paddedCardPlayers = [...topPlayers.slice(0, 3), ...bottomPlayers.slice(0, 3)];
+  while (paddedCardPlayers.length < 6) {
+    paddedCardPlayers.push(null);
+  }
 
   return (
     <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative">
-      {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
+      {/* 背景 */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div
           className="absolute"
@@ -118,7 +118,9 @@ export default function HostPlayingPage() {
           <DiagonalBingoBoard scale={1.5} />
         </div>
       </div>
+
       <div className="relative z-10 w-full px-6 pb-12">
+        {/* リーチ・ビンゴ・勝者の演出 */}
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 text-center space-y-2">
           {reachAchievers.map((name, i) => (
             <div key={`reach-${i}`} className="text-yellow-400 text-2xl font-bold animate-pulse drop-shadow">
@@ -137,6 +139,7 @@ export default function HostPlayingPage() {
           ))}
         </div>
 
+        {/* 抽選番号の表示 */}
         {showNumber && lastNumber !== null && (
           <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-40 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
             {lastNumber}
@@ -196,26 +199,47 @@ export default function HostPlayingPage() {
             </div>
           </div>
 
-          <div className="w-1/2 grid grid-cols-2 gap-4">
-            {paddedCardPlayers.map((player, index) =>
-              player ? (
-                <BingoCard
-                  key={index}
-                  playerName={player.playerName}
-                  card={player.card.flat()}
-                  calledNumbers={calledNumbers}
-                  colorScheme={{
-                    hit: 'bg-green-500 text-white',
-                    free: 'bg-lime-400 text-white',
-                    default: 'bg-gray-300 text-white',
-                  }}
-                />
-              ) : (
-                <div
-                  key={index}
-                  className="w-full aspect-[3/4] bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300"
-                />
-              ),
+          <div className="w-1/2 grid grid-cols-3 gap-4">
+            {/* 上位3名の見出しとカード */}
+            {topPlayers.length > 0 && (
+              <>
+                <div className="col-span-3 text-center text-lg font-bold text-white">上位{topPlayers.length}名</div>
+                {topPlayers.slice(0, 3).map((player, index) => (
+                  <BingoCard
+                    key={`top-${index}`}
+                    playerName={player.playerName}
+                    card={player.card.flat()}
+                    calledNumbers={calledNumbers}
+                    colorScheme={{
+                      hit: 'bg-green-500 text-white',
+                      free: 'bg-lime-400 text-white',
+                      default: 'bg-gray-300 text-white',
+                    }}
+                  />
+                ))}
+              </>
+            )}
+
+            {/* 下位3名の見出しとカード */}
+            {bottomPlayers.length > 0 && (
+              <>
+                <div className="col-span-3 text-center text-lg font-bold text-white mt-4">
+                  下位{bottomPlayers.length}名
+                </div>
+                {bottomPlayers.slice(0, 3).map((player, index) => (
+                  <BingoCard
+                    key={`bottom-${index}`}
+                    playerName={player.playerName}
+                    card={player.card.flat()}
+                    calledNumbers={calledNumbers}
+                    colorScheme={{
+                      hit: 'bg-green-500 text-white',
+                      free: 'bg-lime-400 text-white',
+                      default: 'bg-gray-300 text-white',
+                    }}
+                  />
+                ))}
+              </>
             )}
           </div>
         </div>
