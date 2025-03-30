@@ -6,6 +6,7 @@ import { doc, onSnapshot, collection, getDoc, updateDoc } from 'firebase/firesto
 import { db } from '@/firebase/init';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
+import DiagonalBingoBoard from '@/components/bingo/DiagonalBingoBoard';
 
 export default function StandbyPage() {
   const { roomId } = useParams();
@@ -52,12 +53,26 @@ export default function StandbyPage() {
   };
 
   return (
-    <main className="min-h-screen p-6 flex flex-col justify-between">
+
+    <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative p-6" >
+          {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <div
+              className="absolute"
+              style={{
+                top: '35%',
+                left: '50%',
+                transform: 'translate(-50%, -50%) scale(3) rotate(30deg)',
+              }}
+            >
+              <DiagonalBingoBoard scale={1.5} />
+            </div>
+          </div>
       <div className="flex justify-between items-start">
         {/* 左：room名とQR */}
         <div>
           <h1 className="text-3xl font-bold mb-4">{roomName}</h1>
-          <QRCodeSVG value={`${process.env.NEXT_PUBLIC_BASE_URL}/gameroom/${roomId}/player/sign-in`} size={256} />
+          <QRCodeSVG value={`${process.env.NEXT_PUBLIC_BASE_URL}/gameroom/${roomId}/player/sign-in`} size={450} />
         </div>
 
         {/* 右：参加者 */}
