@@ -7,6 +7,7 @@ import { db } from '@/firebase/init';
 import BingoCard from '@/components/bingo/BingoCard';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import DiagonalBingoBoard from '@/components/bingo/DiagonalBingoBoard';
 
 type Progress = {
   hitCount: number;
@@ -123,76 +124,91 @@ export default function PlayerPlayingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-blue-900 text-white p-4 flex flex-col items-center relative">
-      {effectText && (
-        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 text-6xl font-extrabold text-pink-500 animate-bounce drop-shadow-xl">
-          {effectText}
+    <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative min-h-screen bg-blue-900 text-white p-4 flex flex-col items-center relative">
+      {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute"
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) scale(3) rotate(20deg)',
+          }}
+        >
+          <DiagonalBingoBoard scale={1} />
         </div>
-      )}
-
-      <div className="flex items-center justify-between w-full max-w-xl mb-4 px-4">
-        <span className="text-3xl font-bold">#{rank}</span>
-
-        <div className="flex gap-2">
-          <div className="bg-yellow-400 text-black rounded-md px-3 py-1 text-center">
-            <div className="text-sm font-semibold">リーチ確率</div>
-            {progress ? (
-              <div className="text-2xl font-bold">{progress.reachProbability}%</div>
-            ) : (
-              <div className="text-sm text-gray-700">読み込み中...</div>
-            )}
-          </div>
-
-          <div className="bg-purple-400 text-black rounded-md px-3 py-1 text-center">
-            <div className="text-sm font-semibold">ビンゴ確率</div>
-            {progress ? (
-              <div className="text-2xl font-bold">{progress.bingoProbability}%</div>
-            ) : (
-              <div className="text-sm text-gray-700">読み込み中...</div>
-            )}
-          </div>
-        </div>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <button className="bg-white text-black rounded px-2 py-1 text-sm font-semibold">カスタムを確認</button>
-          </DialogTrigger>
-          <DialogContent className="bg-white text-black max-w-md">
-            <DialogTitle className="text-lg font-bold mb-4">カスタム設定</DialogTitle>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ルール</TableHead>
-                  <TableHead className="text-right">値</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Object.entries(customs || {}).map(([key, value]) => (
-                  <TableRow key={key}>
-                    <TableCell>{key}</TableCell>
-                    <TableCell className="text-right font-bold">
-                      {typeof value === 'boolean' ? (value ? 'True' : 'False') : String(value)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </DialogContent>
-        </Dialog>
       </div>
+      <div className="relative z-10 w-full px-6 pb-12">
+        {effectText && (
+          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 text-6xl font-extrabold text-pink-500 animate-bounce drop-shadow-xl">
+            {effectText}
+          </div>
+        )}
 
-      <BingoCard
-        playerName={playerName}
-        card={card}
-        calledNumbers={calledNumbers}
-        highlightNumber={!acknowledged ? highlightedNumber : null}
-        onHighlightClick={handleAcknowledge}
-        colorScheme={{
-          hit: 'bg-green-500 text-white',
-          free: 'bg-lime-400 text-white',
-          default: 'bg-gray-400 text-white',
-        }}
-      />
+        <div className="flex items-center justify-between w-full max-w-xl mb-4 px-4">
+          <span className="text-3xl font-bold">#{rank}</span>
+
+          <div className="flex gap-2">
+            <div className="bg-yellow-400 text-black rounded-md px-3 py-1 text-center">
+              <div className="text-sm font-semibold">リーチ確率</div>
+              {progress ? (
+                <div className="text-2xl font-bold">{progress.reachProbability}%</div>
+              ) : (
+                <div className="text-sm text-gray-700">読み込み中...</div>
+              )}
+            </div>
+
+            <div className="bg-purple-400 text-black rounded-md px-3 py-1 text-center">
+              <div className="text-sm font-semibold">ビンゴ確率</div>
+              {progress ? (
+                <div className="text-2xl font-bold">{progress.bingoProbability}%</div>
+              ) : (
+                <div className="text-sm text-gray-700">読み込み中...</div>
+              )}
+            </div>
+          </div>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="bg-white text-black rounded px-2 py-1 text-sm font-semibold">カスタムを確認</button>
+            </DialogTrigger>
+            <DialogContent className="bg-white text-black max-w-md">
+              <DialogTitle className="text-lg font-bold mb-4">カスタム設定</DialogTitle>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ルール</TableHead>
+                    <TableHead className="text-right">値</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Object.entries(customs || {}).map(([key, value]) => (
+                    <TableRow key={key}>
+                      <TableCell>{key}</TableCell>
+                      <TableCell className="text-right font-bold">
+                        {typeof value === 'boolean' ? (value ? 'True' : 'False') : String(value)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <BingoCard
+          playerName={playerName}
+          card={card}
+          calledNumbers={calledNumbers}
+          highlightNumber={!acknowledged ? highlightedNumber : null}
+          onHighlightClick={handleAcknowledge}
+          colorScheme={{
+            hit: 'bg-green-500 text-white',
+            free: 'bg-lime-400 text-white',
+            default: 'bg-gray-400 text-white',
+          }}
+        />
+      </div>
     </main>
   );
 }

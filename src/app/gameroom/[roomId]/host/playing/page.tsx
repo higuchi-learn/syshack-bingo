@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import BingoCard from '@/components/bingo/BingoCard';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase/init';
+import DiagonalBingoBoard from '@/components/bingo/DiagonalBingoBoard';
 
 type Player = {
   playerName: string;
@@ -103,105 +104,120 @@ export default function HostPlayingPage() {
   const paddedCardPlayers = [...cardPlayers, ...Array(6 - cardPlayers.length).fill(null)];
 
   return (
-    <main className="p-4 flex flex-col gap-4 text-gray-800 relative">
-      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 text-center space-y-2">
-        {reachAchievers.map((name, i) => (
-          <div key={`reach-${i}`} className="text-yellow-400 text-2xl font-bold animate-pulse drop-shadow">
-            🎯 REACH! {name}
-          </div>
-        ))}
-        {bingoAchievers.map((name, i) => (
-          <div key={`bingo-${i}`} className="text-purple-400 text-3xl font-bold animate-bounce drop-shadow">
-            🎉 BINGO! {name}
-          </div>
-        ))}
-        {winAchievers.map((name, i) => (
-          <div key={`win-${i}`} className="text-green-500 text-4xl font-extrabold animate-bounce drop-shadow-lg">
-            🏆 WINNER! {name}
-          </div>
-        ))}
-      </div>
-
-      {showNumber && lastNumber !== null && (
-        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-40 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
-          {lastNumber}
+    <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative">
+      {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute"
+          style={{
+            top: '35%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) scale(3) rotate(30deg)',
+          }}
+        >
+          <DiagonalBingoBoard scale={1.5} />
         </div>
-      )}
-
-      <div className="flex justify-end">
-        <Button onClick={handleFinish} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2">
-          ゲームを終了する
-        </Button>
       </div>
+      <div className="relative z-10 w-full px-6 pb-12">
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 text-center space-y-2">
+          {reachAchievers.map((name, i) => (
+            <div key={`reach-${i}`} className="text-yellow-400 text-2xl font-bold animate-pulse drop-shadow">
+              🎯 REACH! {name}
+            </div>
+          ))}
+          {bingoAchievers.map((name, i) => (
+            <div key={`bingo-${i}`} className="text-purple-400 text-3xl font-bold animate-bounce drop-shadow">
+              🎉 BINGO! {name}
+            </div>
+          ))}
+          {winAchievers.map((name, i) => (
+            <div key={`win-${i}`} className="text-green-500 text-4xl font-extrabold animate-bounce drop-shadow-lg">
+              🏆 WINNER! {name}
+            </div>
+          ))}
+        </div>
 
-      <div className="flex gap-4">
-        <div className="w-1/2 space-y-4">
-          <h2 className="text-xl font-bold">参加者 {totalPlayers}名</h2>
-          <div className="bg-gray-100 rounded-xl p-4">
-            <h3 className="text-lg font-semibold mb-2">TOP 10</h3>
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr>
-                  <th className="px-0.5">順位</th>
-                  <th className="px-0.5">プレイヤー名</th>
-                  <th className="px-0.5">ヒット数</th>
-                  <th className="px-0.5">リーチ確率</th>
-                  <th className="px-0.5">ビンゴ確率</th>
-                  <th className="px-0.5">リーチ数</th>
-                  <th className="px-0.5">ビンゴ数</th>
-                  <th className="px-0.5">評価値</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ranking.map((player, i) => (
-                  <tr key={i}>
-                    <td className="px-0.5 font-bold">#{i + 1}</td>
-                    <td className="px-0.5">{player.playerName}</td>
-                    <td className="px-0.5">{player.progress?.hitCount ?? 0}</td>
-                    <td className="px-0.5">{player.progress?.reachProbability ?? 0}%</td>
-                    <td className="px-0.5">{player.progress?.bingoProbability ?? 0}%</td>
-                    <td className="px-0.5">{player.progress?.reachCount ?? 0}</td>
-                    <td className="px-0.5">{player.progress?.bingoCount ?? 0}</td>
-                    <td className="px-0.5">{player.progress?.point ?? 0}</td>
+        {showNumber && lastNumber !== null && (
+          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-40 bg-yellow-400 text-white text-7xl font-extrabold px-10 py-6 rounded-3xl shadow-2xl animate-bounce">
+            {lastNumber}
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button onClick={handleFinish} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2">
+            ゲームを終了する
+          </Button>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="w-1/2 space-y-4">
+            <h2 className="text-xl font-bold">参加者 {totalPlayers}名</h2>
+            <div className="bg-gray-100 rounded-xl p-4">
+              <h3 className="text-lg font-semibold mb-2">TOP 10</h3>
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr>
+                    <th className="px-0.5">順位</th>
+                    <th className="px-0.5">プレイヤー名</th>
+                    <th className="px-0.5">ヒット数</th>
+                    <th className="px-0.5">リーチ確率</th>
+                    <th className="px-0.5">ビンゴ確率</th>
+                    <th className="px-0.5">リーチ数</th>
+                    <th className="px-0.5">ビンゴ数</th>
+                    <th className="px-0.5">評価値</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ranking.map((player, i) => (
+                    <tr key={i}>
+                      <td className="px-0.5 font-bold">#{i + 1}</td>
+                      <td className="px-0.5">{player.playerName}</td>
+                      <td className="px-0.5">{player.progress?.hitCount ?? 0}</td>
+                      <td className="px-0.5">{player.progress?.reachProbability ?? 0}%</td>
+                      <td className="px-0.5">{player.progress?.bingoProbability ?? 0}%</td>
+                      <td className="px-0.5">{player.progress?.reachCount ?? 0}</td>
+                      <td className="px-0.5">{player.progress?.bingoCount ?? 0}</td>
+                      <td className="px-0.5">{player.progress?.point ?? 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col items-center gap-4">
+              <img src="/images/gachagacha.png" alt="抽選器" className="w-40" />
+              <Button
+                onClick={handleDraw}
+                disabled={isDrawing}
+                className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold text-xl px-8 py-4 rounded-xl"
+              >
+                {isDrawing ? '抽選中...' : '抽選'}
+              </Button>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <img src="/images/gachagacha.png" alt="抽選器" className="w-40" />
-            <Button
-              onClick={handleDraw}
-              disabled={isDrawing}
-              className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold text-xl px-8 py-4 rounded-xl"
-            >
-              {isDrawing ? '抽選中...' : '抽選'}
-            </Button>
+          <div className="w-1/2 grid grid-cols-2 gap-4">
+            {paddedCardPlayers.map((player, index) =>
+              player ? (
+                <BingoCard
+                  key={index}
+                  playerName={player.playerName}
+                  card={player.card.flat()}
+                  calledNumbers={calledNumbers}
+                  colorScheme={{
+                    hit: 'bg-green-500 text-white',
+                    free: 'bg-lime-400 text-white',
+                    default: 'bg-gray-300 text-white',
+                  }}
+                />
+              ) : (
+                <div
+                  key={index}
+                  className="w-full aspect-[3/4] bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300"
+                />
+              ),
+            )}
           </div>
-        </div>
-
-        <div className="w-1/2 grid grid-cols-2 gap-4">
-          {paddedCardPlayers.map((player, index) =>
-            player ? (
-              <BingoCard
-                key={index}
-                playerName={player.playerName}
-                card={player.card.flat()}
-                calledNumbers={calledNumbers}
-                colorScheme={{
-                  hit: 'bg-green-500 text-white',
-                  free: 'bg-lime-400 text-white',
-                  default: 'bg-gray-300 text-white',
-                }}
-              />
-            ) : (
-              <div
-                key={index}
-                className="w-full aspect-[3/4] bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300"
-              />
-            ),
-          )}
         </div>
       </div>
     </main>
