@@ -97,12 +97,6 @@ export default function HostPlayingPage() {
     }
   };
 
-  // カード表示の並びを 3列×2行：上3人(top)、下3人(bottom)
-  const paddedCardPlayers = [...topPlayers.slice(0, 3), ...bottomPlayers.slice(0, 3)];
-  while (paddedCardPlayers.length < 6) {
-    paddedCardPlayers.push(null);
-  }
-
   return (
     <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative">
       {/* 背景 */}
