@@ -53,46 +53,53 @@ export default function StandbyPage() {
   };
 
   return (
-
-    <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative p-6" >
-          {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
-          <div className="absolute inset-0 z-0 pointer-events-none">
-            <div
-              className="absolute"
-              style={{
-                top: '35%',
-                left: '50%',
-                transform: 'translate(-50%, -50%) scale(3) rotate(30deg)',
-              }}
-            >
-              <DiagonalBingoBoard scale={1.5} />
-            </div>
-          </div>
-      <div className="flex justify-between items-start">
-        {/* 左：room名とQR */}
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{roomName}</h1>
-          <QRCodeSVG value={`${process.env.NEXT_PUBLIC_BASE_URL}/gameroom/${roomId}/player/sign-in`} size={450} />
+    <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative">
+      {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute"
+          style={{
+            top: '35%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) scale(3) rotate(30deg)',
+          }}
+        >
+          <DiagonalBingoBoard scale={1.5} />
+        </div>
+      </div>
+      {/* UI全体ラップ */}
+      <div className="relative z-10 w-full px-6 pb-12">
+        {/* タイトル */}
+        <div className="bg-[#FFE500] pt-6 pb-6 pl-6 -mx-6">
+          <h1 className="text-4xl font-extrabold text-black text-left">{roomName}</h1>
         </div>
 
-        {/* 右：参加者 */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">参加者：{players.length}名</h2>
-          <ul className="bg-gray-100 p-4 rounded max-h-[320px] overflow-y-auto">
-            {players.map((p) => (
-              <li key={p.id} className="mb-2">
-                {p.name}
-              </li>
-            ))}
-          </ul>
+        {/* QRコードと参加者情報 */}
+        <div className="flex justify-between items-start mt-6 flex-wrap gap-6">
+          {/* QRコード */}
+          <div className="relative z-10">
+            <QRCodeSVG value={`${process.env.NEXT_PUBLIC_BASE_URL}/gameroom/${roomId}/player/sign-in`} size={700} />
+          </div>
+
+          {/* 参加者リスト */}
+          <div className="relative z-10">
+            <h2 className="text-xl font-bold mb-4">参加者：{players.length}名</h2>
+            <ul className="bg-gray-100 p-4 rounded max-h-[320px] overflow-y-auto w-64 shadow-md">
+              {players.map((p) => (
+                <li key={p.id} className="mb-2">
+                  {p.name}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
-      {/* ゲーム開始ボタン */}
-      <div className="flex justify-end mt-10">
+      {/* ゲーム開始ボタン（右下固定） */}
+      <div className="fixed bottom-6 right-6 z-20">
         <Button
           onClick={handleStart}
-          className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-6 py-2 rounded"
+          className="bg-[#F39800] hover:bg-orange-600 text-white font-bold text-lg px-8 py-3 rounded shadow-lg"
         >
           ゲーム開始
         </Button>
