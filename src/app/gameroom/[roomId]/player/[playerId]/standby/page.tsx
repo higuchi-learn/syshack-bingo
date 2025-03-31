@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -45,8 +43,8 @@ export default function PlayerWaitingPage() {
 
   return (
     <main className="min-h-screen w-full bg-sky-400 overflow-hidden relative flex flex-col justify-center items-center px-6 text-white">
-      {/* 背景用：斜めにしたビンゴボード（左回転・最背面） */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      {/* 背景用：斜めにしたビンゴボード（左回転・最背面・さらに薄く） */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-10">
         <div
           className="absolute"
           style={{
@@ -58,16 +56,18 @@ export default function PlayerWaitingPage() {
           <DiagonalBingoBoard scale={1} />
         </div>
       </div>
-      <div className="relative z-10 w-full px-6 pb-12">
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">参加が完了しました！</h1>
+
+      {/* 中央のメッセージ表示部分 */}
+      <div className="relative z-10 w-full max-w-md px-6 pb-12 bg-white/70 rounded-xl shadow-lg text-black">
+        <div className="space-y-6 text-center">
+          <h1 className="text-3xl font-bold drop-shadow-md">参加が完了しました！</h1>
           <p className="text-lg">
-            ルーム名: <span className="font-mono text-yellow-300">{roomName}</span>
+            ルーム名: <span className="font-mono text-yellow-600">{roomName}</span>
           </p>
           <p className="text-lg">
-            プレイヤー名: <span className="font-mono text-green-300">{playerName}</span>
+            プレイヤー名: <span className="font-mono text-green-600">{playerName}</span>
           </p>
-          <p className="text-sm text-gray-300">ゲームが開始されるまで、このままお待ちください…</p>
+          <p className="text-sm text-gray-700">ゲームが開始されるまで、このままお待ちください…</p>
         </div>
       </div>
     </main>
